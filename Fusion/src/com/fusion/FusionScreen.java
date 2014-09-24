@@ -6,8 +6,9 @@ import com.badlogic.gdx.Screen;
  * FusionScreen
  * @author Christopher Ford
  * 
- * Template for a game screen. Splits the game in to
- * different states so it can be managed easier.
+ * Template for a game screen. This employs the State
+ * design pattern, which splits the game into different
+ * states so it is easier to organize.
  */
 public abstract class FusionScreen implements Screen
 {
