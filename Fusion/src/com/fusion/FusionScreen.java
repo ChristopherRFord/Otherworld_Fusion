@@ -1,6 +1,12 @@
 package com.fusion;
 
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.fusion.gfx.VirtualViewportCamera;
+
+import com.fusion.util.*;
+import com.fusion.gfx.DebugConsole;
 
 /**
  * FusionScreen
@@ -12,6 +18,19 @@ import com.badlogic.gdx.Screen;
  */
 public abstract class FusionScreen implements Screen
 {
+	protected AssetGroupManager AssetManager;
+	protected GameScreenManager ScreenManager;
+	
+	protected VirtualViewportCamera GameCamera;
+	protected VirtualViewportCamera UICamera;
+	
+	protected Batch GameBatch;
+	protected Batch UIBatch;
+	
+	protected Stage Stage;
+	
+	protected DebugConsole DebugConsole;
+	
 	// Different ways a screen can be entered
 	// and left
 	public enum ScreenSwitchState
@@ -29,6 +48,19 @@ public abstract class FusionScreen implements Screen
 	{
 		this.ID = ID;
 		this.Game = Game;
+		
+		AssetManager = AssetGroupManager.GetAssetGroupManager();
+		ScreenManager = GameScreenManager.GetScreenManager();
+		
+		GameCamera = Game.GameCamera;
+		UICamera = Game.UICamera;
+		
+		GameBatch = Game.GameBatch;
+		
+		Stage = Game.Stage;
+		
+		DebugConsole = Game.DebugConsole;
+		DebugConsole.swapRenderable();
 	}
 	
 	public int getID(){	return ID;	}
@@ -37,38 +69,40 @@ public abstract class FusionScreen implements Screen
 	protected 	abstract void Render(float Delta);
 	public 		abstract void Enter(ScreenSwitchState State);
 	public 		abstract void Leave(ScreenSwitchState State);
-	protected 	abstract void InitGUI();
+	protected 	abstract void InitGUI(int Width, int Height);
 	
 	@Override
 	public void render(float Delta)
 	{
+		Update(Delta);
 		
+		GameBatch.begin();
+		Render(Delta);
+		GameBatch.end();
+		
+		Stage.draw();
+		
+		if (DebugConsole.getRenderable())
+		{
+			DebugConsole.act();
+			DebugConsole.draw();
+		}
 	}
 
 	@Override
 	public void resize(int Width, int Height)
 	{
-		
+		InitGUI(Width, Height);
 	}
 
 	@Override
-	public void show()
-	{
-		
-	}
-
+	public void show(){}
 	@Override
-	public void hide()
-	{
-		
-	}
-
+	public void hide(){}
 	@Override
 	public void pause(){}
-
 	@Override
 	public void resume(){}
-
 	@Override
 	public void dispose(){}
 }

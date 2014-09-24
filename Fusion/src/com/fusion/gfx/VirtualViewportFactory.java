@@ -8,7 +8,8 @@ package com.fusion.gfx;
  * Provided a min/max width and height in the constructor
  * VirtualViewportFactory makes sure that given any ACTUAL
  * resolution, it will providea working VISUAL resolution within
- * the bounds of the min/max width and height.
+ * the bounds of the min/max width and height. This class
+ * implements the Factory design pattern.
  */
 public class VirtualViewportFactory
 {
