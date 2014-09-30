@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
-import com.fusion.gfx.DebugConsole;
 import com.fusion.gfx.VirtualViewportFactory;
 import com.fusion.gfx.VirtualViewport;
 import com.fusion.gfx.VirtualViewportCamera;
@@ -31,12 +30,12 @@ public abstract class FusionGame extends Game
 	protected VirtualViewportCamera GameCamera;
 	protected VirtualViewportCamera UICamera;
 	
-	protected Stage Stage;
-	
 	protected Batch GameBatch;
 	protected Batch UIBatch;
 	
-	protected DebugConsole DebugConsole;
+	protected Stage Stage;
+	
+	protected Console Console;
 	
 	private boolean Start;
 
@@ -52,8 +51,6 @@ public abstract class FusionGame extends Game
 		
 		GameBatch = new SpriteBatch();
 		UIBatch = new SpriteBatch();
-		
-		DebugConsole = new DebugConsole(UIBatch);
 		
 		Start = false;
 	}
@@ -76,7 +73,6 @@ public abstract class FusionGame extends Game
 		Stage = new Stage(new StretchViewport(VirtualViewport.getWidth(), VirtualViewport.getHeight()), UIBatch);
 		Gdx.input.setInputProcessor(Stage);
 		
-		DebugConsole.setVirtualViewport(VirtualViewport);
 		super.resize(width, height);
 		
 		if (!Start)
@@ -98,6 +94,9 @@ public abstract class FusionGame extends Game
 		
 		UIBatch.setProjectionMatrix(UICamera.projection);
 		UICamera.update();
+		
+		Stage.act();
+		Stage.draw();
 		
 		super.render();
 	}
@@ -122,5 +121,5 @@ public abstract class FusionGame extends Game
 	
 	public Stage GetStage()							{	return Stage;			}
 	
-	public DebugConsole GetDebugConsole()			{	return DebugConsole;	}
+	public Console GetConsole()						{	return Console;			}
 }

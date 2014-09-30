@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.fusion.gfx.VirtualViewportCamera;
 
 import com.fusion.util.*;
-import com.fusion.gfx.DebugConsole;
 
 /**
  * FusionScreen
@@ -28,8 +27,6 @@ public abstract class FusionScreen implements Screen
 	protected Batch UIBatch;
 	
 	protected Stage Stage;
-	
-	protected DebugConsole DebugConsole;
 	
 	// Different ways a screen can be entered
 	// and left
@@ -58,9 +55,6 @@ public abstract class FusionScreen implements Screen
 		GameBatch = Game.GameBatch;
 		
 		Stage = Game.Stage;
-		
-		DebugConsole = Game.DebugConsole;
-		DebugConsole.swapRenderable();
 	}
 	
 	public int getID(){	return ID;	}
@@ -79,14 +73,6 @@ public abstract class FusionScreen implements Screen
 		GameBatch.begin();
 		Render(Delta);
 		GameBatch.end();
-		
-		Stage.draw();
-		
-		if (DebugConsole.getRenderable())
-		{
-			DebugConsole.act();
-			DebugConsole.draw();
-		}
 	}
 
 	@Override

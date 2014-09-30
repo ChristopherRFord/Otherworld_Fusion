@@ -62,7 +62,7 @@ public class AssetGroupManager implements Disposable
 	 * Parses a XML file in the project directory. Loads every individual
 	 * asset into the LIBGDX asset manager.
 	 */
-	public void LoadAssetGroup(String location)
+	public boolean LoadAssetGroup(String location)
 	{
 		try
 		{
@@ -98,16 +98,19 @@ public class AssetGroupManager implements Disposable
 				default:
 					throw new AssetLoadingException(assetLocation, type);
 				}
-
+				
 				Gdx.app.log("--Loading asset", assetLocation + ", " + type);
 			}
 
 			// Close up the stream
 			AssetManager.finishLoading();
+			
+			return true;
 		}
 		catch (IOException | GdxRuntimeException | SerializationException | AssetLoadingException e)
 		{
 			Gdx.app.log(e.getClass() + "", e.getMessage());
+			return false;
 		}
 	}
 	
@@ -118,7 +121,7 @@ public class AssetGroupManager implements Disposable
 	 * Parses a XML file in the project directory. Unloads every individual
 	 * asset into the LIBGDX asset manager.
 	 */
-	public void UnloadAssetGroup(String location)
+	public boolean UnloadAssetGroup(String location)
 	{
 		try
 		{
@@ -140,10 +143,13 @@ public class AssetGroupManager implements Disposable
 
 				Gdx.app.log("-Unloading asset", assetLocation + ", " + type);
 			}
+			
+			return true;
 		}
-		catch(IOException | SerializationException e)
+		catch(IOException | GdxRuntimeException | SerializationException e)
 		{
 			Gdx.app.log(e.getClass() + "", e.getMessage());
+			return false;
 		}
 	}
 	
@@ -158,7 +164,15 @@ public class AssetGroupManager implements Disposable
 	 */
 	public <T> T Get(String location, Class<T> type)
 	{
-		return AssetManager.get(location, type);
+		try
+		{
+			return AssetManager.get(location, type);
+		}
+		catch(GdxRuntimeException e)
+		{
+			Gdx.app.log(e.getClass() + "", e.getMessage());
+			return null;
+		}
 	}
 	
 	@Override

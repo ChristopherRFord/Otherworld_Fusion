@@ -25,7 +25,6 @@ public class StartScreen extends FusionScreen
 	@Override
 	public void Enter(ScreenSwitchState State)
 	{
-		
 	}
 
 	@Override
