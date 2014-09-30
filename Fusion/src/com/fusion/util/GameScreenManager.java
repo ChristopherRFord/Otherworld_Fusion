@@ -80,8 +80,10 @@ public class GameScreenManager
 	 * and battle screen switching. Pushes the screen on the stack
 	 * and makes that the current screen
 	 */
-	public void SetScreen(int ID, Game Game)
+	public boolean SetScreen(int ID, Game Game)
 	{	
+		if (ScreenMap.get(ID) == null) return false;
+		
 		while(!CurrentScreen.isEmpty())
 		{
 			Gdx.app.log("-Leaving Screen", CurrentScreen.peek().getID() + "");
@@ -93,6 +95,8 @@ public class GameScreenManager
 		Gdx.app.log("-Entering Screen", ID + "");
 		ScreenMap.get(ID).Enter(ScreenSwitchState.SET_SCREEN);
 		Game.setScreen(CurrentScreen.peek());
+		
+		return true;
 	}
 
 	/**

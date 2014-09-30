@@ -1,10 +1,10 @@
 package com.fusion;
 
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.fusion.gfx.VirtualViewportCamera;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 
+import com.fusion.gfx.VirtualViewportCamera;
 import com.fusion.util.*;
 
 /**
@@ -21,10 +21,7 @@ public abstract class FusionScreen implements Screen
 	protected GameScreenManager ScreenManager;
 	
 	protected VirtualViewportCamera GameCamera;
-	protected VirtualViewportCamera UICamera;
-	
 	protected Batch GameBatch;
-	protected Batch UIBatch;
 	
 	protected Stage Stage;
 	
@@ -50,8 +47,6 @@ public abstract class FusionScreen implements Screen
 		ScreenManager = GameScreenManager.GetScreenManager();
 		
 		GameCamera = Game.GameCamera;
-		UICamera = Game.UICamera;
-		
 		GameBatch = Game.GameBatch;
 		
 		Stage = Game.Stage;
@@ -69,10 +64,13 @@ public abstract class FusionScreen implements Screen
 	public void render(float Delta)
 	{
 		Update(Delta);
+		Stage.act();
 		
 		GameBatch.begin();
 		Render(Delta);
 		GameBatch.end();
+		
+		Stage.draw();
 	}
 
 	@Override

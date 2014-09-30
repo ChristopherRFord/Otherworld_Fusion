@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-
 import com.fusion.gfx.VirtualViewportFactory;
 import com.fusion.gfx.VirtualViewport;
 import com.fusion.gfx.VirtualViewportCamera;
@@ -28,10 +27,9 @@ public abstract class FusionGame extends Game
 	
 	protected VirtualViewportFactory VirtualViewportFactory;
 	protected VirtualViewportCamera GameCamera;
-	protected VirtualViewportCamera UICamera;
 	
 	protected Batch GameBatch;
-	protected Batch UIBatch;
+	private Batch UIBatch;
 	
 	protected Stage Stage;
 	
@@ -47,7 +45,6 @@ public abstract class FusionGame extends Game
 		
 		VirtualViewportFactory = new VirtualViewportFactory(800, 480, 854, 600);
 		GameCamera = new VirtualViewportCamera();
-		UICamera = new VirtualViewportCamera();
 		
 		GameBatch = new SpriteBatch();
 		UIBatch = new SpriteBatch();
@@ -61,12 +58,8 @@ public abstract class FusionGame extends Game
 		VirtualViewport VirtualViewport = VirtualViewportFactory.getVirtualViewport(width, height);
 		
 		GameCamera.setVirtualViewport(VirtualViewport);
-		GameCamera.updateViewport();
 		GameCamera.position.set(VirtualViewport.getWidth()/2, VirtualViewport.getHeight()/2, 0);
-		
-		UICamera.setVirtualViewport(VirtualViewport);
-		UICamera.updateViewport();
-		UICamera.position.set(VirtualViewport.getWidth()/2, VirtualViewport.getHeight()/2, 0);
+		GameCamera.updateViewport();
 		
 		if (Stage != null) Stage.dispose();
 		
@@ -85,18 +78,12 @@ public abstract class FusionGame extends Game
 	
 	@Override
 	public void render()
-	{
+	{			
 		Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
 		Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
 		
-		GameBatch.setProjectionMatrix(GameCamera.projection);
 		GameCamera.update();
-		
-		UIBatch.setProjectionMatrix(UICamera.projection);
-		UICamera.update();
-		
-		Stage.act();
-		Stage.draw();
+		GameBatch.setProjectionMatrix(GameCamera.combined);
 		
 		super.render();
 	}
@@ -114,12 +101,8 @@ public abstract class FusionGame extends Game
 	public abstract void Close();
 	
 	public VirtualViewportCamera GetGameCamera()	{	return GameCamera;		}
-	public VirtualViewportCamera GetUICamera()		{	return UICamera;		}
-	
 	public Batch GetGameBatch()						{	return GameBatch;		}
-	public Batch GetUIBatch()						{	return UIBatch;			}
 	
 	public Stage GetStage()							{	return Stage;			}
-	
 	public Console GetConsole()						{	return Console;			}
 }

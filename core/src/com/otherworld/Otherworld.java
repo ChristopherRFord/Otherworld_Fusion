@@ -3,8 +3,10 @@ package com.otherworld;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.fusion.util.Console;
+
 import com.fusion.FusionGame;
+import com.fusion.util.Console;
+
 import com.otherworld.screens.StartScreen;
 import com.otherworld.style.TextFieldStyle_Otherworld;
 
@@ -31,7 +33,7 @@ public class Otherworld extends FusionGame
 		super.resize(width, height);
 		
 		Console = new Console(this, new TextFieldStyle_Otherworld(AssetManager.Get("images/Menu.png", Texture.class), new BitmapFont(), Color.WHITE),
-							200, 0);
+				200, 0);
 		Stage.addActor(Console);
 	}
 	

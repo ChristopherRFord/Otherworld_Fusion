@@ -9,8 +9,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
+
 import com.fusion.FusionGame;
 
 /**
@@ -63,15 +65,20 @@ public class Console extends Actor
 	// Allows the parsing of Strings
 	private StringTokenizer sT;
 	
+	private Stage Stage;
+	
 	// Data managers
 	private AssetGroupManager AssetManager;
-	//private GameScreenManager ScreenManager;
+	private GameScreenManager ScreenManager;
 
 	// Current information of the game to
 	// be rendered
 	private int FPS;
 	private float RealResolutionWidth, RealResolutionHeight;
 	private float VirtualResolutionWidth, VirtualResolutionHeight;
+	private int NumActors;
+	private int CurrentScreenID;
+	private int ScreenStackSize;
 
 	public Console(FusionGame Game, TextFieldStyle Style, int xPos, int yPos)
 	{
@@ -84,19 +91,20 @@ public class Console extends Actor
 		Font = Style.font;
 
 		this.Game = Game;
-		this.Game.GetStage().addActor(Input);
+		Stage = Game.GetStage();
+		Stage.addActor(Input);
 
 		Lines = new ArrayList<Line>();
 		
 		AssetManager = AssetGroupManager.GetAssetGroupManager();
-		//ScreenManager = GameScreenManager.GetScreenManager();
+		ScreenManager = GameScreenManager.GetScreenManager();
 	}
 
 	@Override
 	public void act(float delta)
 	{
 		// Hide or unhide the console
-		if (Gdx.input.isKeyJustPressed(Keys.BACKSLASH) || Gdx.input.isTouched(4))
+		if (Gdx.input.isKeyJustPressed(Keys.BACKSLASH) || Gdx.input.isTouched(3))
 		{
 			if (!Input.isVisible()) Input.setVisible(true);
 			else					Input.setVisible(false);
@@ -121,8 +129,11 @@ public class Console extends Actor
 			FPS = Gdx.graphics.getFramesPerSecond();
 			RealResolutionWidth = Gdx.graphics.getWidth();
 			RealResolutionHeight = Gdx.graphics.getHeight();
-			VirtualResolutionWidth = Game.GetUICamera().viewportWidth;
-			VirtualResolutionHeight = Game.GetUICamera().viewportHeight;
+			VirtualResolutionWidth = Game.GetGameCamera().viewportWidth;
+			VirtualResolutionHeight = Game.GetGameCamera().viewportHeight;
+			NumActors = Stage.getActors().size;
+			CurrentScreenID = ScreenManager.GetCurrentScreen().getID();
+			ScreenStackSize = ScreenManager.GetScreenSize();
 		}
 	}
 
@@ -158,7 +169,10 @@ public class Console extends Actor
 		Font.setColor(Color.GREEN);
 		Font.draw(batch, "FPS:" + FPS, Input.getX() + Input.getWidth(), Input.getCenterY() + 40);
 		Font.draw(batch, "Device Resolution: " + RealResolutionWidth + "," + RealResolutionHeight, Input.getX() + Input.getWidth(), Input.getCenterY() + 60);
-		Font.draw(batch, "Virtual Resolution: " + VirtualResolutionWidth + "," + VirtualResolutionHeight, Input.getX() + Input.getWidth(), Input.getCenterY() + 80);		
+		Font.draw(batch, "Virtual Resolution: " + VirtualResolutionWidth + "," + VirtualResolutionHeight, Input.getX() + Input.getWidth(), Input.getCenterY() + 80);
+		Font.draw(batch, "Number of Actors: " + NumActors, Input.getX() + Input.getWidth(), Input.getCenterY() + 100);
+		Font.draw(batch, "Current Screen ID: " + CurrentScreenID, Input.getX() + Input.getWidth(), Input.getCenterY() + 120);
+		Font.draw(batch, "Screen Stack Size: " + ScreenStackSize, Input.getX() + Input.getWidth(), Input.getCenterY() + 140);
 	}
 
 	/**
@@ -205,6 +219,7 @@ public class Console extends Actor
 		}
 
 		sT.nextToken();
+		String nextToken;
 
 		// LOADING AN XML
 		if (command.startsWith("loadXML"))
@@ -214,7 +229,7 @@ public class Console extends Actor
 				Add("loadXML not used correctly", LineType.Error);
 				return false;
 			}
-			String nextToken = sT.nextToken();
+			nextToken = sT.nextToken();
 
 			if (!AssetManager.LoadAssetGroup(nextToken))
 			{
@@ -232,11 +247,37 @@ public class Console extends Actor
 				Add("loadXML not used correctly", LineType.Error);
 				return false;
 			}
-			String nextToken = sT.nextToken();
+			nextToken = sT.nextToken();
 			
 			if (!AssetManager.UnloadAssetGroup(nextToken))
 			{
 				Add("Failed to unload XML at location '" + nextToken + "'", LineType.Error);
+				return false;
+			}
+			return true;
+		}
+		
+		// SWITCHING SCREENS
+		if (command.startsWith("setScreen"))
+		{
+			if (!sT.hasMoreTokens())
+			{
+				Add("setScreen not used correctly", LineType.Error);
+				return false;
+			}
+			
+			try
+			{
+				int screen = Integer.parseInt(sT.nextToken());
+				if (!ScreenManager.SetScreen(screen, Game))
+				{
+					Add("Screen " + screen + " does not exist", LineType.Error);
+					return false;
+				}
+			}
+			catch (NumberFormatException e)
+			{
+				Add("Must pass a screen number to setScreen", LineType.Error);
 				return false;
 			}
 			return true;

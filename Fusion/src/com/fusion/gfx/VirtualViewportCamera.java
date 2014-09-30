@@ -22,10 +22,7 @@ public class VirtualViewportCamera extends OrthographicCamera
 	public void setVirtualViewport(VirtualViewport virtualViewport) {	this.virtualViewport = virtualViewport;	}
 	public VirtualViewportCamera(VirtualViewport virtualViewport) 	{	this(virtualViewport, 0f, 0f);			}
 	
-	public VirtualViewportCamera()
-	{
-		
-	}
+	public VirtualViewportCamera(){}
 
 	public VirtualViewportCamera(VirtualViewport virtualViewport, float cx, float cy)
 	{
