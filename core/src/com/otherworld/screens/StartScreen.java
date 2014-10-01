@@ -15,7 +15,8 @@ public class StartScreen extends FusionScreen
 	private Texture Background;
 	private Music Music;
 	
-	private TextButton_Otherworld PlayButton;
+	private TextButton_Otherworld ExploreButton;
+	private TextButton_Otherworld ExitButton;
 	
 	public StartScreen(int ID, FusionGame Game)
 	{
@@ -31,17 +32,20 @@ public class StartScreen extends FusionScreen
 	@Override
 	protected void Render(float Delta)
 	{
+		GameBatch.begin();
 		GameBatch.draw(Background, 0, 0,  GameCamera.viewportWidth, GameCamera.viewportHeight);
+		GameBatch.end();
 	}
 
 	@Override
 	public void Enter(ScreenSwitchState State)
 	{
-		AssetManager.LoadAssetGroup(XML_PATH + "StartMenu.xml");
+		AssetManager.LoadAssetGroup(ASSET_XML_PATH + "StartMenu.xml");
 		
 		Background = AssetManager.Get(IMAGE_PATH + "Background.png", Texture.class);
 		Music = AssetManager.Get(MUSIC_PATH + "MenuTheme.mp3", Music.class);
 		
+		Music.setLooping(true);
 		Music.play();
 	}
 
@@ -50,9 +54,10 @@ public class StartScreen extends FusionScreen
 	{
 		Music.stop();
 		
-		PlayButton.remove();
+		ExploreButton.remove();
+		ExitButton.remove();
 		
-		AssetManager.UnloadAssetGroup(XML_PATH + "StartMenu.xml");
+		AssetManager.UnloadAssetGroup(ASSET_XML_PATH + "StartMenu.xml");
 	}
 
 	@Override
@@ -60,10 +65,14 @@ public class StartScreen extends FusionScreen
 	{
 		Vector2 ButtonBounds = new Vector2(120, 60);
 		
-		Vector2 PlayLocation = new Vector2(100, 100);
+		Vector2 ExploreLocation = new Vector2(100, 100);
+		Vector2 ExitLocation = new Vector2(ExploreLocation.x + ButtonBounds.x, ExploreLocation.y);
 		
-		PlayButton = new TextButton_Otherworld("Play", AssetManager.Get(IMAGE_PATH + "Menu.png", Texture.class), PlayLocation, ButtonBounds);
-		Stage.addActor(PlayButton);
+		ExploreButton = new TextButton_Otherworld("Explore", AssetManager.Get(IMAGE_PATH + "Menu.png", Texture.class), ExploreLocation, ButtonBounds);
+		Stage.addActor(ExploreButton);
+		
+		ExitButton = new TextButton_Otherworld("Exit", AssetManager.Get(IMAGE_PATH + "Menu.png", Texture.class), ExitLocation, ButtonBounds);
+		Stage.addActor(ExitButton);
 	}
 
 }

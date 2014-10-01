@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.fusion.FusionGame;
 import com.fusion.util.Console;
 
+import static com.otherworld.OtherworldConstants.*;
+import com.otherworld.screens.ExploreScreen;
 import com.otherworld.screens.StartScreen;
 import com.otherworld.style.TextFieldStyle_Otherworld;
 
@@ -16,9 +18,10 @@ public class Otherworld extends FusionGame
 	@Override
 	public void Init()
 	{
-		AssetManager.LoadAssetGroup("xmls/CommonAssets.xml");
+		AssetManager.LoadAssetGroup(ASSET_XML_PATH + "CommonAssets.xml");
 
 		ScreenManager.PutScreen(new StartScreen(1, this));
+		ScreenManager.PutScreen(new ExploreScreen(2, this));
 	}
 
 	@Override

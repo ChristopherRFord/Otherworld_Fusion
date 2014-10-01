@@ -28,7 +28,7 @@ public class Console extends Actor
 {
 	// Different types of lines that can be sent
 	// to the console
-	private enum LineType
+	public enum LineType
 	{
 		User,
 		System,
@@ -69,6 +69,7 @@ public class Console extends Actor
 	
 	// Data managers
 	private AssetGroupManager AssetManager;
+	private EngineManager EntityManager;
 	private GameScreenManager ScreenManager;
 
 	// Current information of the game to
@@ -79,6 +80,7 @@ public class Console extends Actor
 	private int NumActors;
 	private int CurrentScreenID;
 	private int ScreenStackSize;
+	private int NumEntities;
 
 	public Console(FusionGame Game, TextFieldStyle Style, int xPos, int yPos)
 	{
@@ -97,6 +99,7 @@ public class Console extends Actor
 		Lines = new ArrayList<Line>();
 		
 		AssetManager = AssetGroupManager.GetAssetGroupManager();
+		EntityManager = EngineManager.GetEngineManager();
 		ScreenManager = GameScreenManager.GetScreenManager();
 	}
 
@@ -133,7 +136,7 @@ public class Console extends Actor
 			VirtualResolutionHeight = Game.GetGameCamera().viewportHeight;
 			NumActors = Stage.getActors().size;
 			CurrentScreenID = ScreenManager.GetCurrentScreen().getID();
-			ScreenStackSize = ScreenManager.GetScreenSize();
+			NumEntities = EntityManager.GetNumEntities();
 		}
 	}
 
@@ -173,6 +176,7 @@ public class Console extends Actor
 		Font.draw(batch, "Number of Actors: " + NumActors, Input.getX() + Input.getWidth(), Input.getCenterY() + 100);
 		Font.draw(batch, "Current Screen ID: " + CurrentScreenID, Input.getX() + Input.getWidth(), Input.getCenterY() + 120);
 		Font.draw(batch, "Screen Stack Size: " + ScreenStackSize, Input.getX() + Input.getWidth(), Input.getCenterY() + 140);
+		Font.draw(batch, "Number of Entities: " + NumEntities, Input.getX() + Input.getWidth(), Input.getCenterY() + 160);
 	}
 
 	/**
@@ -183,7 +187,7 @@ public class Console extends Actor
 	 * Creates a line and adds the message/type to it. Checks if
 	 * it's a command and if it is then execute it
 	 */
-	private void Add(String message, LineType type)
+	public void Add(String message, LineType type)
 	{
 		Lines.add(new Line(message, type));
 
@@ -200,8 +204,8 @@ public class Console extends Actor
 	 */
 	private boolean ExectureCommand(String Message)
 	{
-		String command = Message;
-		sT = new StringTokenizer(command + " ");
+		sT = new StringTokenizer(Message + " ");
+		String command = sT.nextToken();
 		switch(command)
 		{
 		case "version":
@@ -213,20 +217,22 @@ public class Console extends Actor
 		case "clear":
 			Lines.clear();
 			return true;
+		case "clearEntities":
+			EntityManager.removeAllEntities();
+			return true;
 		case "quit":
 			Gdx.app.exit();
 			return true;
 		}
 
-		sT.nextToken();
 		String nextToken;
 
-		// LOADING AN XML
-		if (command.startsWith("loadXML"))
+		// LOADING AN ASSETGROUP
+		if (command.equals("loadAssetGroup"))
 		{
 			if (!sT.hasMoreTokens())
 			{
-				Add("loadXML not used correctly", LineType.Error);
+				Add("loadAssetGroup not used correctly - loadAssetGroup LOCATION_OF_XML", LineType.Error);
 				return false;
 			}
 			nextToken = sT.nextToken();
@@ -239,12 +245,12 @@ public class Console extends Actor
 			return true;
 		}
 		
-		// UNLOADING AN XML
-		if (command.startsWith("unloadXML"))
+		// UNLOADING AN ASSETGROUP
+		if (command.equals("unloadAssetGroup"))
 		{
 			if (!sT.hasMoreTokens())
 			{
-				Add("loadXML not used correctly", LineType.Error);
+				Add("unloadAssetGroup not used correctly - unlaodAssetGroup LOCATION_OF_XML", LineType.Error);
 				return false;
 			}
 			nextToken = sT.nextToken();
@@ -257,8 +263,26 @@ public class Console extends Actor
 			return true;
 		}
 		
+		if (command.equals("loadEntity"))
+		{
+			if (!sT.hasMoreTokens())
+			{
+				Add("loadEntity not used correctly - loadEntity LOCATION_OF_XML", LineType.Error);
+				return false;
+			}
+
+			nextToken = sT.nextToken();
+			
+			if (!EntityManager.LoadEntity(nextToken))
+			{
+				Add("Failed to load XML at location '" + nextToken + "'", LineType.Error);
+				return false;
+			}
+			return true;
+		}
+		
 		// SWITCHING SCREENS
-		if (command.startsWith("setScreen"))
+		if (command.equals("setScreen"))
 		{
 			if (!sT.hasMoreTokens())
 			{

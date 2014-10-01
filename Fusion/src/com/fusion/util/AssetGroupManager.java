@@ -98,8 +98,6 @@ public class AssetGroupManager implements Disposable
 				default:
 					throw new AssetLoadingException(assetLocation, type);
 				}
-				
-				Gdx.app.log("--Loading asset", assetLocation + ", " + type);
 			}
 
 			// Close up the stream
@@ -134,14 +132,11 @@ public class AssetGroupManager implements Disposable
 			// Start parsing
 			for (XmlReader.Element element : assets)
 			{
-				// Retrieve the type and location of a specific asset
-				String type = element.get("type").toString();
+				// Retrieve the location of a specific asset
 				String assetLocation = element.get("location").toString();
 
 				// Unload asset from the LIBGDX asset manager
 				AssetManager.unload(assetLocation);
-
-				Gdx.app.log("-Unloading asset", assetLocation + ", " + type);
 			}
 			
 			return true;

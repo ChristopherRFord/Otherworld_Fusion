@@ -2,6 +2,8 @@ package com.fusion;
 
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
 import com.fusion.gfx.VirtualViewportCamera;
@@ -17,16 +19,26 @@ import com.fusion.util.*;
  */
 public abstract class FusionScreen implements Screen
 {
+	// Managers
 	protected AssetGroupManager AssetManager;
+	protected EngineManager EntityManager;
 	protected GameScreenManager ScreenManager;
 	
+	// Viewport & rendering
 	protected VirtualViewportCamera GameCamera;
 	protected Batch GameBatch;
+	protected OrthogonalTiledMapRenderer TiledMapRenderer;
 	
+	// User interface
 	protected Stage Stage;
 	
-	// Different ways a screen can be entered
-	// and left
+	// Reference to the game
+	protected final FusionGame Game;
+	
+	// ID of the screen
+	protected final int ID;
+	
+	// Different ways a screen can be entered and left
 	public enum ScreenSwitchState
 	{
 		SET_SCREEN,
@@ -35,8 +47,6 @@ public abstract class FusionScreen implements Screen
 		POP_SCREEN;
 	}
 	
-	protected final int ID;
-	protected final FusionGame Game;
 	
 	public FusionScreen(int ID, FusionGame Game)
 	{
@@ -44,12 +54,15 @@ public abstract class FusionScreen implements Screen
 		this.Game = Game;
 		
 		AssetManager = AssetGroupManager.GetAssetGroupManager();
+		EntityManager = EngineManager.GetEngineManager();
 		ScreenManager = GameScreenManager.GetScreenManager();
 		
 		GameCamera = Game.GameCamera;
 		GameBatch = Game.GameBatch;
 		
 		Stage = Game.Stage;
+		
+		TiledMapRenderer = Game.TiledMapRenderer;
 	}
 	
 	public int getID(){	return ID;	}
@@ -66,10 +79,8 @@ public abstract class FusionScreen implements Screen
 		Update(Delta);
 		Stage.act();
 		
-		GameBatch.begin();
 		Render(Delta);
-		GameBatch.end();
-		
+		EntityManager.update(Delta);
 		Stage.draw();
 	}
 
@@ -78,15 +89,27 @@ public abstract class FusionScreen implements Screen
 	{
 		InitGUI(Width, Height);
 	}
+	
+	@Override
+	public void hide()
+	{
+		EntityManager.removeAllEntities();
+	}
+	
+	protected void RenderMap(TiledMap Map)
+	{
+		TiledMapRenderer.setView(GameCamera);
+		TiledMapRenderer.render();
+	}
 
 	@Override
 	public void show(){}
-	@Override
-	public void hide(){}
 	@Override
 	public void pause(){}
 	@Override
 	public void resume(){}
 	@Override
 	public void dispose(){}
+	
+	
 }
