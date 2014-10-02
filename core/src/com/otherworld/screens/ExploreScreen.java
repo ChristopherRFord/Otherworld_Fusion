@@ -37,6 +37,7 @@ public class ExploreScreen extends FusionScreen
 			AssetManager.LoadAssetGroup(ASSET_XML_PATH + "Explore.xml");
 			Map = AssetManager.Get(TMX_PATH + "Explore.tmx", TiledMap.class);
 			TiledMapRenderer.setMap(Map);
+			EntityManager.LoadEntity("entity_xmls/Player.xml");
 			break;
 		case PUSH_SCREEN:
 			break;
