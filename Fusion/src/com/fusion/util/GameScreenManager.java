@@ -2,12 +2,12 @@ package com.fusion.util;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+
 import com.fusion.FusionScreen;
 import com.fusion.FusionScreen.ScreenSwitchState;
 
 import java.util.HashMap;
 import java.util.Stack;
-
 
 /**
  * GameScreenmanager

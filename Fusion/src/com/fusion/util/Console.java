@@ -8,11 +8,11 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
-
 import com.fusion.FusionGame;
 
 /**
@@ -48,7 +48,7 @@ public class Console extends Actor
 			this.Type = Type;
 		}
 	}
-	
+
 	// Game reference
 	private FusionGame Game;
 
@@ -61,16 +61,17 @@ public class Console extends Actor
 	// Data structure where the lines for the
 	// console will be held
 	private ArrayList<Line> Lines;
-	
+
 	// Allows the parsing of Strings
 	private StringTokenizer sT;
-	
+
 	private Stage Stage;
-	
+
 	// Data managers
 	private AssetGroupManager AssetManager;
 	private EngineManager EntityManager;
 	private GameScreenManager ScreenManager;
+	protected PhysicsWorldManager PhysicsManager;
 
 	// Current information of the game to
 	// be rendered
@@ -81,6 +82,7 @@ public class Console extends Actor
 	private int CurrentScreenID;
 	private int ScreenStackSize;
 	private int NumEntities;
+	private int NumBodies;
 
 	public Console(FusionGame Game, TextFieldStyle Style, int xPos, int yPos)
 	{
@@ -97,11 +99,14 @@ public class Console extends Actor
 		Stage.addActor(Input);
 
 		Lines = new ArrayList<Line>();
-		
+
 		AssetManager = AssetGroupManager.GetAssetGroupManager();
 		EntityManager = EngineManager.GetEngineManager();
 		ScreenManager = GameScreenManager.GetScreenManager();
+		PhysicsManager = PhysicsWorldManager.GetPhysicsWorldManager();
 	}
+
+	public boolean IsActive(){	return Input.isVisible();	}
 
 	@Override
 	public void act(float delta)
@@ -120,7 +125,7 @@ public class Console extends Actor
 		{
 			Add(Input.getText(), LineType.User);
 			Input.setText("");
-			
+
 			// only allowing 10 lines to be rendered
 			// at a time
 			if (Lines.size() >= 10) Lines.remove(0);
@@ -137,6 +142,7 @@ public class Console extends Actor
 			NumActors = Stage.getActors().size;
 			CurrentScreenID = ScreenManager.GetCurrentScreen().getID();
 			NumEntities = EntityManager.GetNumEntities();
+			NumBodies = PhysicsManager.GetWorld().getBodyCount();
 		}
 	}
 
@@ -177,6 +183,7 @@ public class Console extends Actor
 		Font.draw(batch, "Current Screen ID: " + CurrentScreenID, Input.getX() + Input.getWidth(), Input.getCenterY() + 120);
 		Font.draw(batch, "Screen Stack Size: " + ScreenStackSize, Input.getX() + Input.getWidth(), Input.getCenterY() + 140);
 		Font.draw(batch, "Number of Entities: " + NumEntities, Input.getX() + Input.getWidth(), Input.getCenterY() + 160);
+		Font.draw(batch, "Number of Bodies: " + NumBodies, Input.getX() + Input.getWidth(), Input.getCenterY() + 180);
 	}
 
 	/**
@@ -220,6 +227,12 @@ public class Console extends Actor
 		case "clearEntities":
 			EntityManager.removeAllEntities();
 			return true;
+		case "unloadMap":
+			TiledMapLoader.UnloadMap(Game);
+			return true;
+		case "debug":
+			Game.ToggleDebug();
+			return true;
 		case "quit":
 			Gdx.app.exit();
 			return true;
@@ -244,7 +257,7 @@ public class Console extends Actor
 			}
 			return true;
 		}
-		
+
 		// UNLOADING AN ASSETGROUP
 		if (command.equals("unloadAssetGroup"))
 		{
@@ -254,7 +267,7 @@ public class Console extends Actor
 				return false;
 			}
 			nextToken = sT.nextToken();
-			
+
 			if (!AssetManager.UnloadAssetGroup(nextToken))
 			{
 				Add("Failed to unload XML at location '" + nextToken + "'", LineType.Error);
@@ -262,7 +275,8 @@ public class Console extends Actor
 			}
 			return true;
 		}
-		
+
+		// LOADS AN ENTITY XML
 		if (command.equals("loadEntity"))
 		{
 			if (!sT.hasMoreTokens())
@@ -280,7 +294,35 @@ public class Console extends Actor
 			}
 			return true;
 		}
-		
+
+		// LOADS A TMX MAP
+		if (command.equals("loadMap"))
+		{
+			if (!sT.hasMoreTokens())
+			{
+				Add("loadMap not used correctly", LineType.Error);
+				return false;
+			}
+			if (TiledMapLoader.CurrentMap != null)
+			{
+				Add("A map is already loaded", LineType.Error);
+				return false;
+			}
+			
+			nextToken = sT.nextToken();
+			TiledMap Map = AssetManager.Get(nextToken, TiledMap.class);
+			
+			if (Map == null)
+			{
+				Add("Failed to load TMX at location '" + nextToken + "'", LineType.Error);
+				return false;
+			}
+			
+			TiledMapLoader.LoadMap(Game, Map);
+			return true;
+			
+		}
+
 		// SWITCHING SCREENS
 		if (command.equals("setScreen"))
 		{
@@ -289,7 +331,7 @@ public class Console extends Actor
 				Add("setScreen not used correctly", LineType.Error);
 				return false;
 			}
-			
+
 			try
 			{
 				int screen = Integer.parseInt(sT.nextToken());
@@ -306,7 +348,29 @@ public class Console extends Actor
 			}
 			return true;
 		}
-		
+
+		// SETTING SPEED
+		if (command.equals("setGameSpeed"))
+		{
+			if (!sT.hasMoreTokens())
+			{
+				Add("setGameSpeed not used correctly", LineType.Error);
+				return false;
+			}
+
+			try
+			{
+				int speed = Integer.parseInt(sT.nextToken());
+				PhysicsWorldManager.GAME_SPEED = speed;
+			}
+			catch (NumberFormatException e)
+			{
+				Add("Must pass a speed number to setGameSpeed", LineType.Error);
+				return false;
+			}
+			return true;
+		}
+
 		Add("Command not recognized", LineType.Error);
 		return false;
 	}

@@ -20,5 +20,6 @@ public abstract class Component_Fusion extends Component
 	public Entity GetParent(){	return Parent;	}
 	public void SetParent(Entity Parent){	this.Parent = Parent;	}	
 	
-	public abstract void Init(Element Element);
+	public abstract boolean Init(Element Element);
+	public abstract void DestroyComponent();
 }

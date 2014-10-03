@@ -18,6 +18,8 @@ public class VirtualViewportCamera extends OrthographicCamera
 	Vector3 tmp = new Vector3();
 	Vector2 origin = new Vector2();
 	VirtualViewport virtualViewport;
+	
+	public Vector2 blposition = new Vector2();
 
 	public void setVirtualViewport(VirtualViewport virtualViewport) {	this.virtualViewport = virtualViewport;	}
 	public VirtualViewportCamera(VirtualViewport virtualViewport) 	{	this(virtualViewport, 0f, 0f);			}
@@ -33,6 +35,7 @@ public class VirtualViewportCamera extends OrthographicCamera
 	@Override
 	public void update()
 	{
+		
 		float left = zoom * -viewportWidth / 2 + virtualViewport.getVirtualWidth() * origin.x;
 		float right = zoom * viewportWidth / 2 + virtualViewport.getVirtualWidth() * origin.x;
 		float top = zoom * viewportHeight / 2 + virtualViewport.getVirtualHeight() * origin.y;
@@ -45,6 +48,8 @@ public class VirtualViewportCamera extends OrthographicCamera
 		invProjectionView.set(combined);
 		Matrix4.inv(invProjectionView.val);
 		frustum.update(invProjectionView);
+		
+		blposition.set(position.x - viewportWidth/2, position.y - viewportHeight/2);
 	}
 
 	public void updateViewport()
@@ -56,4 +61,10 @@ public class VirtualViewportCamera extends OrthographicCamera
 	{
 		return virtualViewport;
 	}
+	
+	public float GetTopBoundry()		{	return blposition.y + (viewportHeight * .8f);	}
+	public float GetBottomBoundry()		{	return blposition.y + (viewportHeight * .2f);	}
+	
+	public float GetRightBoundry()		{	return blposition.x + (viewportWidth * .8f);	}
+	public float GetLeftBoundry()		{	return blposition.x + (viewportWidth *.2f);		}
 }

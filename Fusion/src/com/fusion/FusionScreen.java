@@ -2,10 +2,9 @@ package com.fusion;
 
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-
+import com.fusion.gfx.DebugRenderer;
 import com.fusion.gfx.VirtualViewportCamera;
 import com.fusion.util.*;
 
@@ -23,14 +22,19 @@ public abstract class FusionScreen implements Screen
 	protected AssetGroupManager AssetManager;
 	protected EngineManager EntityManager;
 	protected GameScreenManager ScreenManager;
+	protected PhysicsWorldManager PhysicsManager;
 	
 	// Viewport & rendering
 	protected VirtualViewportCamera GameCamera;
+	protected VirtualViewportCamera PhysicsCamera;
 	protected Batch GameBatch;
 	protected OrthogonalTiledMapRenderer TiledMapRenderer;
 	
 	// User interface
 	protected Stage Stage;
+	
+	// Debugging
+	protected DebugRenderer DebugRenderer;
 	
 	// Reference to the game
 	protected final FusionGame Game;
@@ -53,14 +57,18 @@ public abstract class FusionScreen implements Screen
 		this.ID = ID;
 		this.Game = Game;
 		
-		AssetManager = AssetGroupManager.GetAssetGroupManager();
-		EntityManager = EngineManager.GetEngineManager();
-		ScreenManager = GameScreenManager.GetScreenManager();
+		AssetManager = Game.AssetManager;
+		EntityManager = Game.EntityManager;
+		ScreenManager = Game.ScreenManager;
+		PhysicsManager = Game.PhysicsManager;
 		
 		GameCamera = Game.GameCamera;
+		PhysicsCamera = Game.PhysicsCamera;
 		GameBatch = Game.GameBatch;
 		
 		Stage = Game.Stage;
+		
+		DebugRenderer = Game.DebugRenderer;
 		
 		TiledMapRenderer = Game.TiledMapRenderer;
 	}
@@ -76,11 +84,23 @@ public abstract class FusionScreen implements Screen
 	@Override
 	public void render(float Delta)
 	{
+		// Screen's update method
 		Update(Delta);
+		
+		// UI's update method
 		Stage.act();
 		
+		// Physic's update method
+		PhysicsManager.Step(1/45f, 6, 2);
+		
+		// Screen's rendering method
 		Render(Delta);
-		EntityManager.update(Delta);
+		
+		// Engine's update & rendering method
+		EntityManager.GetEngine().update(Delta);
+		DebugRenderer.DebugRender(Game.GetDebug());
+		
+		// UI's render method
 		Stage.draw();
 	}
 
@@ -93,13 +113,14 @@ public abstract class FusionScreen implements Screen
 	@Override
 	public void hide()
 	{
-		EntityManager.removeAllEntities();
 	}
 	
-	protected void RenderMap(TiledMap Map)
+	protected void RenderMap()
 	{
 		TiledMapRenderer.setView(GameCamera);
-		TiledMapRenderer.render();
+		
+		if (TiledMapRenderer.getMap() != null)
+			TiledMapRenderer.render();
 	}
 
 	@Override

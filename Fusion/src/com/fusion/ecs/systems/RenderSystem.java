@@ -7,7 +7,8 @@ import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.fusion.ecs.components.PositionComponent;
+
+import com.fusion.ecs.components.PhysicsComponent;
 import com.fusion.ecs.components.TextureComponent;
 
 /**
@@ -21,7 +22,7 @@ public class RenderSystem extends EntitySystem
 {
 	private ImmutableArray<Entity> Entities;
 	
-	private ComponentMapper<PositionComponent> 	PM = ComponentMapper.getFor(PositionComponent.class);
+	private ComponentMapper<PhysicsComponent> 	PM = ComponentMapper.getFor(PhysicsComponent.class);
 	private ComponentMapper<TextureComponent>	TM = ComponentMapper.getFor(TextureComponent.class);
 	
 	private Batch Batch;
@@ -36,7 +37,7 @@ public class RenderSystem extends EntitySystem
 	@Override
 	public void addedToEngine(Engine engine)
 	{
-		Entities = engine.getEntitiesFor(Family.getFor(PositionComponent.class, TextureComponent.class));
+		Entities = engine.getEntitiesFor(Family.getFor(PhysicsComponent.class, TextureComponent.class));
 	}
 	
 	@Override
@@ -46,10 +47,10 @@ public class RenderSystem extends EntitySystem
 		for (int i = 0; i < Entities.size(); i++)
 		{
 			Entity Entity = Entities.get(i);
-			PositionComponent PC = PM.get(Entity);
+			PhysicsComponent PC = PM.get(Entity);
 			TextureComponent TC = TM.get(Entity);
 			
-			Batch.draw(TC.Texture, PC.X, PC.Y);
+			Batch.draw(TC.Texture, PC.ActualX, PC.ActualY);
 		}
 		Batch.end();
 	}

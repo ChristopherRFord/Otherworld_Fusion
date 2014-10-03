@@ -1,26 +1,29 @@
 package com.fusion.util;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
+import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.EntitySystem;
+import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.SerializationException;
 import com.badlogic.gdx.utils.XmlReader;
 import com.badlogic.gdx.utils.XmlReader.Element;
+
 import com.fusion.ecs.Component_Fusion;
 import com.fusion.ecs.components.InputComponent;
-import com.fusion.ecs.components.PositionComponent;
+import com.fusion.ecs.components.PhysicsComponent;
 import com.fusion.ecs.components.TextureComponent;
 import com.fusion.err.EntityLoadingException;
 
 enum EntityType
 {
-	PositionComponent,
 	TextureComponent,
-	InputComponent
+	InputComponent,
+	PhysicsComponent
 }
 
 /**
@@ -40,7 +43,7 @@ public class EngineManager
 	
 	private Engine Engine;
 	private ComponentFactory ComponentFactory;
-	private int NumEntities;
+	private ArrayList<Entity> Entities;
 	
 	private XmlReader XmlReader;
 	
@@ -50,7 +53,7 @@ public class EngineManager
 	{
 		Engine = new Engine();
 		ComponentFactory = new ComponentFactory();
-		NumEntities = 0;
+		Entities = new ArrayList<Entity>();
 
 		XmlReader = new XmlReader();
 	}
@@ -94,6 +97,8 @@ public class EngineManager
 				if (component == null) throw new EntityLoadingException(Location, type);
 				Entity.add(component);
 			}
+			
+			addEntity(Entity);
 		}
 		catch (IOException | EntityLoadingException | SerializationException e)
 		{
@@ -101,42 +106,55 @@ public class EngineManager
 			return false;
 		}
 		
-		addEntity(Entity);
 		return true;
-	}
-	
-	public void update(float Delta)
-	{
-		Engine.update(Delta);
-	}
-	
-	public void addSystem(EntitySystem System)
-	{
-		Engine.addSystem(System);
 	}
 	
 	public void addEntity(Entity Entity)
 	{
 		Engine.addEntity(Entity);
-		NumEntities++;
+		Entities.add(Entity);
 	}
 	
 	public void removeEnitty(Entity Entity)
 	{
-		if (NumEntities <= 0) return;
+		if (Entities.isEmpty()) return;
+		
+		ImmutableArray<Component> Components = Entity.getComponents();
+		
+		for (int i = 0; i < Components.size(); i++)
+		{
+			Component_Fusion C = (Component_Fusion) Components.get(i);
+			C.DestroyComponent();
+		}
 		
 		Engine.removeEntity(Entity);
-		NumEntities--;
+		Entities.remove(Entity);
 	}
 	
 	public void removeAllEntities()
 	{
+		if (Entities.isEmpty()) return;
+		
+		for (int i = 0; i < Entities.size(); i++)
+		{
+			Entity E = Entities.get(i);
+			
+			ImmutableArray<Component> Components = E.getComponents();
+			
+			for (int j = 0; j < Components.size(); j++)
+			{
+				Component_Fusion C = (Component_Fusion) Components.get(j);
+				C.DestroyComponent();
+			}
+		}
+		
 		Engine.removeAllEntities();
-		NumEntities = 0;
+		Entities.clear();
 	}
 	
-	public int 		GetNumEntities(){	return NumEntities;	}
-	public Engine 	GetEngine()		{	return Engine;		}
+	public ArrayList<Entity>	GetEntitiy()	{	return Entities;		}
+	public int 					GetNumEntities(){	return Entities.size();	}
+	public Engine 				GetEngine()		{	return Engine;			}
 }
 
 /**
@@ -152,26 +170,26 @@ class ComponentFactory
 	
 	protected Component_Fusion CreateComponent(String Type, Element Element, Entity Parent)
 	{
-		if (Type.equals(EntityType.PositionComponent.toString()))
-		{
-			PositionComponent P = new PositionComponent();
-			P.Init(Element);
-			P.SetParent(Parent);
-			return P;
-		}
-		else if (Type.equals(EntityType.TextureComponent.toString()))
+		if (Type.equals(EntityType.TextureComponent.toString()))
 		{
 			TextureComponent T = new TextureComponent();
-			T.Init(Element);
+			if (!T.Init(Element)) return null;
 			T.SetParent(Parent);
 			return T;
 		}
 		else if (Type.equals(EntityType.InputComponent.toString()))
 		{
 			InputComponent I = new InputComponent();
-			I.Init(Element);
+			if (!I.Init(Element)) return null;
 			I.SetParent(Parent);
 			return I;
+		}
+		else if (Type.equals(EntityType.PhysicsComponent.toString()))
+		{
+			PhysicsComponent Py = new PhysicsComponent();
+			if (!Py.Init(Element)) return null;
+			Py.SetParent(Parent);
+			return Py;
 		}
 		
 		return null;
