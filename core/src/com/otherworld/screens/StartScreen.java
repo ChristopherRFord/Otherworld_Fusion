@@ -87,5 +87,4 @@ public class StartScreen extends FusionScreen
 		ExitButton = new TextButton_Otherworld("Exit", AssetManager.Get(IMAGE_PATH + "Menu.png", Texture.class), ExitLocation, ButtonBounds);
 		Stage.addActor(ExitButton);
 	}
-
 }

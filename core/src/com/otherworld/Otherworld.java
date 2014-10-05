@@ -36,7 +36,7 @@ public class Otherworld extends FusionGame
 		super.resize(width, height);
 		
 		Console = new Console(this, new TextFieldStyle_Otherworld(AssetManager.Get("images/Menu.png", Texture.class), new BitmapFont(), Color.WHITE),
-				200, 0);
+				200, Stage.getHeight());
 		Stage.addActor(Console);
 	}
 	

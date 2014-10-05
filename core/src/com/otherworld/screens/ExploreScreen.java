@@ -1,15 +1,14 @@
 package com.otherworld.screens;
 
 import com.badlogic.gdx.maps.tiled.TiledMap;
-
 import com.fusion.FusionGame;
 import com.fusion.FusionScreen;
+import com.fusion.util.TiledMapLoader;
 
 import static com.otherworld.OtherworldConstants.*;
 
 public class ExploreScreen extends FusionScreen
 {
-	private TiledMap Map;
 	
 	public ExploreScreen(int ID, FusionGame Game)
 	{
@@ -25,7 +24,7 @@ public class ExploreScreen extends FusionScreen
 	@Override
 	protected void Render(float Delta)
 	{
-		RenderMap(Map);
+		RenderMap();
 	}
 
 	@Override
@@ -35,8 +34,7 @@ public class ExploreScreen extends FusionScreen
 		{
 		case SET_SCREEN:
 			AssetManager.LoadAssetGroup(ASSET_XML_PATH + "Explore.xml");
-			Map = AssetManager.Get(TMX_PATH + "Explore.tmx", TiledMap.class);
-			TiledMapRenderer.setMap(Map);
+			TiledMapLoader.LoadMap(Game, AssetManager.Get(TMX_PATH + "Explore.tmx", TiledMap.class));
 			EntityManager.LoadEntity("entity_xmls/Player.xml");
 			break;
 		case PUSH_SCREEN:
@@ -54,7 +52,6 @@ public class ExploreScreen extends FusionScreen
 		switch(State)
 		{
 		case SET_SCREEN:
-			Map.dispose();
 			AssetManager.UnloadAssetGroup(ASSET_XML_PATH + "Explore.xml");
 			break;
 		case PUSH_SCREEN:
