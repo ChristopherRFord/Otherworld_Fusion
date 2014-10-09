@@ -15,11 +15,11 @@ import com.badlogic.gdx.utils.XmlReader.Element;
  */
 public abstract class Component_Fusion extends Component
 {
-	private Entity Parent;
+	protected Entity parent;
 	
-	public Entity GetParent(){	return Parent;	}
-	public void SetParent(Entity Parent){	this.Parent = Parent;	}	
+	public Entity getParent(){	return parent;	}
+	public void setParent(Entity parent){	this.parent = parent;	}	
 	
-	public abstract boolean Init(Element Element);
-	public abstract void DestroyComponent();
+	public abstract boolean init(Element element);
+	public abstract void destroyComponent();
 }

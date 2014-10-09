@@ -6,13 +6,12 @@ import com.fusion.ecs.Component_Fusion;
 
 public class InputComponent extends Component_Fusion
 {
-
 	@Override
-	public boolean Init(Element Element)
+	public boolean init(Element Element)
 	{
 		return true;
 	}
 
 	@Override
-	public void DestroyComponent() {}
+	public void destroyComponent() {}
 }

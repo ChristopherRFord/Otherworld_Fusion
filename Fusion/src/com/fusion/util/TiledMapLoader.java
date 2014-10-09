@@ -1,18 +1,19 @@
 package com.fusion.util;
 
-import java.util.ArrayList;
-
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+
 import com.fusion.FusionGame;
 import com.fusion.gfx.TiledMap_Fusion;
+import com.fusion.phx.CollisionData;
 
 /**
  * TiledMapLoader
@@ -23,80 +24,71 @@ import com.fusion.gfx.TiledMap_Fusion;
  */
 public class TiledMapLoader
 {	
-	public static TiledMap_Fusion CurrentMap;
+	public static TiledMap_Fusion currentMap;
 	
-	public static void LoadMap(FusionGame Game, TiledMap Map)
+	public static void loadMap(FusionGame game, TiledMap map)
 	{
-		CurrentMap = new TiledMap_Fusion(Map);
+		currentMap = new TiledMap_Fusion(map);
 		
-		OrthogonalTiledMapRenderer MapRenderer = Game.GetTiledMapRenderer();
-		MapRenderer.setMap(CurrentMap.GetTiledMap());
+		OrthogonalTiledMapRenderer MapRenderer = game.getTiledMapRenderer();
+		MapRenderer.setMap(currentMap.getTiledMap());
 		
-		CreateCollision(CurrentMap);
+		createCollision(currentMap);
 	}
 	
-	private static void CreateCollision(TiledMap_Fusion Map)
+	private static void createCollision(TiledMap_Fusion map)
 	{
 		int SCALING_FACTOR = PhysicsWorldManager.SCALING_FACTOR;
-		World World = PhysicsWorldManager.GetPhysicsWorldManager().GetWorld();
+		World world = PhysicsWorldManager.getPhysicsWorldManager().getWorld();
 
-		TiledMapTileLayer CollisionLayer = (TiledMapTileLayer) Map.GetTiledMap().getLayers().get(0);
-		float TileWidth = CollisionLayer.getTileWidth();
-		float TileHeight = CollisionLayer.getTileHeight();
-		float TilesWidth = CollisionLayer.getWidth();
-		float TilesHeight = CollisionLayer.getHeight();
+		TiledMapTileLayer collisionLayer = (TiledMapTileLayer) map.getTiledMap().getLayers().get(0);
+		float tileWidth = collisionLayer.getTileWidth();
+		float tileHeight = collisionLayer.getTileHeight();
+		float tilesWidth = collisionLayer.getWidth();
+		float tilesHeight = collisionLayer.getHeight();
 
-		BodyDef BodyDef = new BodyDef();
-		BodyDef.type = BodyType.StaticBody;
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.position.set(0, 0);
+		bodyDef.type = BodyType.StaticBody;
 
-		PolygonShape Shape = new PolygonShape();
-		Shape.setAsBox(TileWidth/(2*SCALING_FACTOR), TileHeight/(2*SCALING_FACTOR));
-
-		FixtureDef FixtureDef = new FixtureDef();
-		FixtureDef.shape = Shape;
-		FixtureDef.friction = 0;
+		Body body = world.createBody(bodyDef);
+		body.setFixedRotation(false);
+		body.setUserData(new CollisionData(null, "TileCollision"));
+		map.SetMapBody(body);
 
 
 		//Loop to cycle through the width of the TMX
-		for (int w = 0; w < TilesWidth; w++)
+		for (int w = 0; w < tilesWidth; w++)
 		{
 			//Loop to cycle through the height of the TMX
-			for (int h = 0; h < TilesHeight; h++)
+			for (int h = 0; h < tilesHeight; h++)
 			{
 				//Is there a tile in the collision layer?
-				if (CollisionLayer.getCell(w, h) != null)
+				if (collisionLayer.getCell(w, h) != null)
 				{
-					//If there is, create the collision and add it to the World and bodyList
-					BodyDef.position.set(((w*TileWidth)/SCALING_FACTOR) + ((TileWidth/SCALING_FACTOR)/2),
-											((h*TileHeight)/SCALING_FACTOR) + ((TileHeight/SCALING_FACTOR)/2));
-					Body TileBody = World.createBody(BodyDef);
-					TileBody.createFixture(FixtureDef);
+					PolygonShape shape = new PolygonShape();
+					shape.setAsBox(tileWidth/(2*SCALING_FACTOR), tileHeight/(2*SCALING_FACTOR),
+					new Vector2((w*tileWidth/SCALING_FACTOR) + ((tileWidth/SCALING_FACTOR)/2), ((h*tileHeight)/SCALING_FACTOR) + ((tileHeight/SCALING_FACTOR)/2)), 0);
 					
-					Map.GetBodyList().add(TileBody);
+					FixtureDef fixtureDef = new FixtureDef();
+					fixtureDef.shape = shape;
+					fixtureDef.friction = 0;
+					fixtureDef.density = 0;
+					
+					body.createFixture(fixtureDef);
+					shape.dispose();
 				}
 			}
 		}
-
-		//Dispose the shape for memory
-		Shape.dispose();
 	}
 	
-	public static void UnloadMap(FusionGame Game)
+	public static void unloadMap(FusionGame game)
 	{
 		//Sets the map renderer to null
-		Game.GetTiledMapRenderer().setMap(null);
+		game.getTiledMapRenderer().setMap(null);
 		
-		ArrayList<Body> BodyList= CurrentMap.GetBodyList();
+		PhysicsWorldManager.getPhysicsWorldManager().delete(currentMap.getMapBody());
 		
-		PhysicsWorldManager PhysicsManager = PhysicsWorldManager.GetPhysicsWorldManager();
-
-		//Take all of the bodies out of the world
-		for (int i = 0; i < BodyList.size(); i++)		PhysicsManager.Delete(BodyList.get(i));
-		
-
-		//Clear the lists
-		BodyList.clear();
-		
-		CurrentMap = null;
+		currentMap = null;
 	}
 }

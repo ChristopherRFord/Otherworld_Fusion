@@ -31,45 +31,43 @@ import java.io.IOException;
  */
 public class AssetGroupManager implements Disposable
 {
-	private static AssetGroupManager Singleton = null;
+	private static AssetGroupManager singleton = null;
 	
-	private AssetManager AssetManager;
-	
-	private XmlReader XmlReader;
+	private AssetManager assetManager;
+	private XmlReader xmlReader;
 	
 	// Private constructor
 	private AssetGroupManager()
 	{
-		AssetManager = new AssetManager();
-		AssetManager.setLoader(TiledMap.class, new TmxMapLoader(new InternalFileHandleResolver()));
+		assetManager = new AssetManager();
+		assetManager.setLoader(TiledMap.class, new TmxMapLoader(new InternalFileHandleResolver()));
 
-		XmlReader = new XmlReader();
+		xmlReader = new XmlReader();
 	}
 	
-	// Static singleton retrieve message
-	public static AssetGroupManager GetAssetGroupManager()
+	public static AssetGroupManager getAssetGroupManager()
 	{
-		if (Singleton == null)
-			Singleton = new AssetGroupManager();
+		if (singleton == null)
+			singleton = new AssetGroupManager();
 
-		return Singleton;
+		return singleton;
 	}
 	
 	/**
-	 * LoadAssetGroup
+	 * loadAssetGroup
 	 * @param location - Location in project directory of XML file
 	 * 
 	 * Parses a XML file in the project directory. Loads every individual
 	 * asset into the LIBGDX asset manager.
 	 */
-	public boolean LoadAssetGroup(String location)
+	public boolean loadAssetGroup(String location)
 	{
 		try
 		{
 			Gdx.app.log("-Loading XML", location);
 
 			// Retrieve the head element and all of the assets
-			XmlReader.Element elements = XmlReader.parse(Gdx.files.classpath(location));
+			XmlReader.Element elements = xmlReader.parse(Gdx.files.classpath(location));
 			Array<XmlReader.Element> assets = elements.getChildrenByName("asset");
 
 			// Start parsing
@@ -84,16 +82,16 @@ public class AssetGroupManager implements Disposable
 				switch(type)
 				{
 				case "Texture":
-					AssetManager.load(assetLocation, Texture.class);
+					assetManager.load(assetLocation, Texture.class);
 					break;
 				case "Sound":
-					AssetManager.load(assetLocation, Sound.class);
+					assetManager.load(assetLocation, Sound.class);
 					break;
 				case "Music":
-					AssetManager.load(assetLocation, Music.class);
+					assetManager.load(assetLocation, Music.class);
 					break;
 				case "TMX":
-					AssetManager.load(assetLocation, TiledMap.class);
+					assetManager.load(assetLocation, TiledMap.class);
 					break;
 				default:
 					throw new AssetLoadingException(assetLocation, type);
@@ -101,7 +99,7 @@ public class AssetGroupManager implements Disposable
 			}
 
 			// Close up the stream
-			AssetManager.finishLoading();
+			assetManager.finishLoading();
 			
 			return true;
 		}
@@ -113,20 +111,20 @@ public class AssetGroupManager implements Disposable
 	}
 	
 	/**
-	 * UnloadAssetGroup
+	 * unloadAssetGroup
 	 * @param location - Location in project directory of XML file
 	 * 
 	 * Parses a XML file in the project directory. Unloads every individual
 	 * asset into the LIBGDX asset manager.
 	 */
-	public boolean UnloadAssetGroup(String location)
+	public boolean unloadAssetGroup(String location)
 	{
 		try
 		{
 			Gdx.app.log("-Unloading XML", location);
 
 			// Retrieve the head element and all of the assets
-			XmlReader.Element elements = XmlReader.parse(Gdx.files.classpath(location));
+			XmlReader.Element elements = xmlReader.parse(Gdx.files.classpath(location));
 			Array<XmlReader.Element> assets = elements.getChildrenByName("asset");
 
 			// Start parsing
@@ -136,7 +134,7 @@ public class AssetGroupManager implements Disposable
 				String assetLocation = element.get("location").toString();
 
 				// Unload asset from the LIBGDX asset manager
-				AssetManager.unload(assetLocation);
+				assetManager.unload(assetLocation);
 			}
 			
 			return true;
@@ -157,11 +155,11 @@ public class AssetGroupManager implements Disposable
 	 *  Just a method call to the LIBGDX AssetManager's
 	 *  get method call.
 	 */
-	public <T> T Get(String location, Class<T> type)
+	public <T> T get(String location, Class<T> type)
 	{
 		try
 		{
-			return AssetManager.get(location, type);
+			return assetManager.get(location, type);
 		}
 		catch(GdxRuntimeException e)
 		{
@@ -173,6 +171,6 @@ public class AssetGroupManager implements Disposable
 	@Override
 	public void dispose()
 	{
-		AssetManager.dispose();
+		assetManager.dispose();
 	}
 }

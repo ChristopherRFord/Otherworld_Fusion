@@ -3,6 +3,8 @@ package com.fusion.util;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import box2dLight.RayHandler;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
@@ -13,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
+
 import com.fusion.FusionGame;
 
 /**
@@ -50,63 +53,63 @@ public class Console extends Actor
 	}
 
 	// Game reference
-	private FusionGame Game;
+	private FusionGame game;
 
 	// Were input is read from
-	private TextField Input;
+	private TextField input;
 
 	// Font to be rendered
-	private BitmapFont Font;
+	private BitmapFont font;
 
 	// Data structure where the lines for the
 	// console will be held
-	private ArrayList<Line> Lines;
+	private ArrayList<Line> lines;
 
 	// Allows the parsing of Strings
-	private StringTokenizer sT;
+	private StringTokenizer stringTokenizer;
 
-	private Stage Stage;
+	private Stage stage;
 
 	// Data managers
-	private AssetGroupManager AssetManager;
-	private EngineManager EntityManager;
-	private GameScreenManager ScreenManager;
-	protected PhysicsWorldManager PhysicsManager;
+	private AssetGroupManager 		assetManager;
+	private EngineManager 			entityManager;
+	private GameScreenManager 		screenManager;
+	protected PhysicsWorldManager 	physicsManager;
 
 	// Current information of the game to
 	// be rendered
-	private int FPS;
-	private float RealResolutionWidth, RealResolutionHeight;
-	private float VirtualResolutionWidth, VirtualResolutionHeight;
-	private int NumActors;
-	private int CurrentScreenID;
-	private int ScreenStackSize;
-	private int NumEntities;
-	private int NumBodies;
+	private int fps;
+	private float realResolutionWidth, realResolutionHeight;
+	private float virtualResolutionWidth, virtualResolutionHeight;
+	private int numActors;
+	private int currentScreenID;
+	private int screenStackSize;
+	private int numEntities;
+	private int numBodies;
 
-	public Console(FusionGame Game, TextFieldStyle Style, int xPos, int yPos)
+	public Console(FusionGame game, TextFieldStyle style, float xPos, float yPos)
 	{
-		Input = new TextField("",  Style);
-		Input.setBounds(xPos, yPos, 400, 50);
-		Input.setBlinkTime(0.3f);
-		Input.setCursorPosition(0);
-		Input.setVisible(false);
+		input = new TextField("",  style);
+		input.setBounds(xPos, yPos-50, 400, 50);
+		input.setBlinkTime(0.3f);
+		input.setCursorPosition(0);
+		input.setVisible(false);
 
-		Font = Style.font;
+		font = style.font;
 
-		this.Game = Game;
-		Stage = Game.GetStage();
-		Stage.addActor(Input);
+		this.game = game;
+		stage = game.getStage();
+		stage.addActor(input);
 
-		Lines = new ArrayList<Line>();
+		lines = new ArrayList<Line>();
 
-		AssetManager = AssetGroupManager.GetAssetGroupManager();
-		EntityManager = EngineManager.GetEngineManager();
-		ScreenManager = GameScreenManager.GetScreenManager();
-		PhysicsManager = PhysicsWorldManager.GetPhysicsWorldManager();
+		assetManager = AssetGroupManager.getAssetGroupManager();
+		entityManager = EngineManager.getEngineManager();
+		screenManager = GameScreenManager.getScreenManager();
+		physicsManager = PhysicsWorldManager.getPhysicsWorldManager();
 	}
 
-	public boolean IsActive(){	return Input.isVisible();	}
+	public boolean IsActive(){	return input.isVisible();	}
 
 	@Override
 	public void act(float delta)
@@ -114,35 +117,36 @@ public class Console extends Actor
 		// Hide or unhide the console
 		if (Gdx.input.isKeyJustPressed(Keys.BACKSLASH) || Gdx.input.isTouched(3))
 		{
-			if (!Input.isVisible()) Input.setVisible(true);
-			else					Input.setVisible(false);
+			if (!input.isVisible()) input.setVisible(true);
+			else					input.setVisible(false);
 
-			Input.setText("");
+			input.setText("");
 		}
 
 		// Insert text from user
-		if (Gdx.input.isKeyJustPressed(Keys.ENTER) && Input.isVisible())
+		if (Gdx.input.isKeyJustPressed(Keys.ENTER) && input.isVisible() && !input.getText().equals(""))
 		{
-			Add(Input.getText(), LineType.User);
-			Input.setText("");
+			add(input.getText(), LineType.User);
+			input.setText("");
 
 			// only allowing 10 lines to be rendered
 			// at a time
-			if (Lines.size() >= 10) Lines.remove(0);
+			if (lines.size() >= 10) lines.remove(0);
 		}
 
 		// Get information about game / current screen
-		if (Input.isVisible())
+		if (input.isVisible())
 		{
-			FPS = Gdx.graphics.getFramesPerSecond();
-			RealResolutionWidth = Gdx.graphics.getWidth();
-			RealResolutionHeight = Gdx.graphics.getHeight();
-			VirtualResolutionWidth = Game.GetGameCamera().viewportWidth;
-			VirtualResolutionHeight = Game.GetGameCamera().viewportHeight;
-			NumActors = Stage.getActors().size;
-			CurrentScreenID = ScreenManager.GetCurrentScreen().getID();
-			NumEntities = EntityManager.GetNumEntities();
-			NumBodies = PhysicsManager.GetWorld().getBodyCount();
+			fps = Gdx.graphics.getFramesPerSecond();
+			realResolutionWidth = Gdx.graphics.getWidth();
+			realResolutionHeight = Gdx.graphics.getHeight();
+			virtualResolutionWidth = game.getGameCamera().viewportWidth;
+			virtualResolutionHeight = game.getGameCamera().viewportHeight;
+			numActors = stage.getActors().size;
+			currentScreenID = screenManager.getCurrentScreen().getID();
+			screenStackSize = screenManager.getScreenSize();
+			numEntities = entityManager.getNumEntities();
+			numBodies = physicsManager.getWorld().getBodyCount();
 		}
 	}
 
@@ -150,40 +154,40 @@ public class Console extends Actor
 	public void draw(Batch batch, float parentAlpha)
 	{	
 		// Don't render anything if it's not visible
-		if (!Input.isVisible()) return;
+		if (!input.isVisible()) return;
 
 		// Going through the Lines array list and render lines
 		// in color depending on their line type
-		for(int i = Lines.size()-1, y = 0; i != -1; i--, y += 20)
+		for(int i = lines.size()-1, y = 0; i != -1; i--, y += 20)
 		{
-			Line line = Lines.get(i);
+			Line line = lines.get(i);
 			switch(line.Type)
 			{
 			case User:
-				Font.setColor(Color.WHITE);
+				font.setColor(Color.WHITE);
 				break;
 			case System:
-				Font.setColor(Color.GREEN);
+				font.setColor(Color.GREEN);
 				break;
 			case Error:
-				Font.setColor(Color.RED);
+				font.setColor(Color.RED);
 				break;
 			default:
 				break;
 			}
-			Font.draw(batch, line.Message, Input.getX() + 10, (Input.getCenterY() + 40) + y);
+			font.draw(batch, line.Message, input.getX() + 10, (input.getY()) - y);
 		}
 
 		// Render the game / screen information
-		Font.setColor(Color.GREEN);
-		Font.draw(batch, "FPS:" + FPS, Input.getX() + Input.getWidth(), Input.getCenterY() + 40);
-		Font.draw(batch, "Device Resolution: " + RealResolutionWidth + "," + RealResolutionHeight, Input.getX() + Input.getWidth(), Input.getCenterY() + 60);
-		Font.draw(batch, "Virtual Resolution: " + VirtualResolutionWidth + "," + VirtualResolutionHeight, Input.getX() + Input.getWidth(), Input.getCenterY() + 80);
-		Font.draw(batch, "Number of Actors: " + NumActors, Input.getX() + Input.getWidth(), Input.getCenterY() + 100);
-		Font.draw(batch, "Current Screen ID: " + CurrentScreenID, Input.getX() + Input.getWidth(), Input.getCenterY() + 120);
-		Font.draw(batch, "Screen Stack Size: " + ScreenStackSize, Input.getX() + Input.getWidth(), Input.getCenterY() + 140);
-		Font.draw(batch, "Number of Entities: " + NumEntities, Input.getX() + Input.getWidth(), Input.getCenterY() + 160);
-		Font.draw(batch, "Number of Bodies: " + NumBodies, Input.getX() + Input.getWidth(), Input.getCenterY() + 180);
+		font.setColor(Color.GREEN);
+		font.draw(batch, "FPS:" + fps, input.getX() + input.getWidth(), input.getCenterY() - 20);
+		font.draw(batch, "Device Resolution: " + realResolutionWidth + "," + realResolutionHeight, input.getX() + input.getWidth(), input.getCenterY() - 40);
+		font.draw(batch, "Virtual Resolution: " + virtualResolutionWidth + "," + virtualResolutionHeight, input.getX() + input.getWidth(), input.getCenterY() - 60);
+		font.draw(batch, "Number of Actors: " + numActors, input.getX() + input.getWidth(), input.getCenterY() - 80);
+		font.draw(batch, "Current Screen ID: " + currentScreenID, input.getX() + input.getWidth(), input.getCenterY() - 100);
+		font.draw(batch, "Screen Stack Size: " + screenStackSize, input.getX() + input.getWidth(), input.getCenterY() - 120);
+		font.draw(batch, "Number of Entities: " + numEntities, input.getX() + input.getWidth(), input.getCenterY() - 140);
+		font.draw(batch, "Number of Bodies: " + numBodies, input.getX() + input.getWidth(), input.getCenterY() - 160);
 	}
 
 	/**
@@ -194,44 +198,44 @@ public class Console extends Actor
 	 * Creates a line and adds the message/type to it. Checks if
 	 * it's a command and if it is then execute it
 	 */
-	public void Add(String message, LineType type)
+	public void add(String message, LineType type)
 	{
-		Lines.add(new Line(message, type));
+		lines.add(new Line(message, type));
 
-		if (type == LineType.User)	ExectureCommand(message);
+		if (type == LineType.User)	exectureCommand(message);
 	}
 
 	/**
-	 * ExecuteCommand
+	 * executeCommand
 	 * @param line - Command to be executes
 	 * @return If the command was successfully executed
 	 * 
 	 * Parses the recieved message and checks if it is
 	 * a valid command or not
 	 */
-	private boolean ExectureCommand(String Message)
+	private boolean exectureCommand(String Message)
 	{
-		sT = new StringTokenizer(Message + " ");
-		String command = sT.nextToken();
+		stringTokenizer = new StringTokenizer(Message + " ");
+		String command = stringTokenizer.nextToken();
 		switch(command)
 		{
 		case "version":
-			Add("Version .001", LineType.System);
+			add("Version .001", LineType.System);
 			return true;
 		case "help":
-			Add("Help message", LineType.System);
+			add("Help message", LineType.System);
 			return true;
 		case "clear":
-			Lines.clear();
+			lines.clear();
 			return true;
 		case "clearEntities":
-			EntityManager.removeAllEntities();
+			entityManager.deleteAllEntities();
 			return true;
 		case "unloadMap":
-			TiledMapLoader.UnloadMap(Game);
+			TiledMapLoader.unloadMap(game);
 			return true;
 		case "debug":
-			Game.ToggleDebug();
+			game.toggleDebug();
 			return true;
 		case "quit":
 			Gdx.app.exit();
@@ -243,16 +247,16 @@ public class Console extends Actor
 		// LOADING AN ASSETGROUP
 		if (command.equals("loadAssetGroup"))
 		{
-			if (!sT.hasMoreTokens())
+			if (!stringTokenizer.hasMoreTokens())
 			{
-				Add("loadAssetGroup not used correctly - loadAssetGroup LOCATION_OF_XML", LineType.Error);
+				add("loadAssetGroup not used correctly - loadAssetGroup LOCATION_OF_XML", LineType.Error);
 				return false;
 			}
-			nextToken = sT.nextToken();
+			nextToken = stringTokenizer.nextToken();
 
-			if (!AssetManager.LoadAssetGroup(nextToken))
+			if (!assetManager.loadAssetGroup(nextToken))
 			{
-				Add("Failed to load XML at location '" + nextToken + "'", LineType.Error);
+				add("Failed to load XML at location '" + nextToken + "'", LineType.Error);
 				return false;
 			}
 			return true;
@@ -261,16 +265,16 @@ public class Console extends Actor
 		// UNLOADING AN ASSETGROUP
 		if (command.equals("unloadAssetGroup"))
 		{
-			if (!sT.hasMoreTokens())
+			if (!stringTokenizer.hasMoreTokens())
 			{
-				Add("unloadAssetGroup not used correctly - unlaodAssetGroup LOCATION_OF_XML", LineType.Error);
+				add("unloadAssetGroup not used correctly - unlaodAssetGroup LOCATION_OF_XML", LineType.Error);
 				return false;
 			}
-			nextToken = sT.nextToken();
+			nextToken = stringTokenizer.nextToken();
 
-			if (!AssetManager.UnloadAssetGroup(nextToken))
+			if (!assetManager.unloadAssetGroup(nextToken))
 			{
-				Add("Failed to unload XML at location '" + nextToken + "'", LineType.Error);
+				add("Failed to unload XML at location '" + nextToken + "'", LineType.Error);
 				return false;
 			}
 			return true;
@@ -279,17 +283,17 @@ public class Console extends Actor
 		// LOADS AN ENTITY XML
 		if (command.equals("loadEntity"))
 		{
-			if (!sT.hasMoreTokens())
+			if (!stringTokenizer.hasMoreTokens())
 			{
-				Add("loadEntity not used correctly - loadEntity LOCATION_OF_XML", LineType.Error);
+				add("loadEntity not used correctly - loadEntity LOCATION_OF_XML", LineType.Error);
 				return false;
 			}
 
-			nextToken = sT.nextToken();
-			
-			if (!EntityManager.LoadEntity(nextToken))
+			nextToken = stringTokenizer.nextToken();
+
+			if (!entityManager.loadEntity(nextToken))
 			{
-				Add("Failed to load XML at location '" + nextToken + "'", LineType.Error);
+				add("Failed to load XML at location '" + nextToken + "'", LineType.Error);
 				return false;
 			}
 			return true;
@@ -298,52 +302,52 @@ public class Console extends Actor
 		// LOADS A TMX MAP
 		if (command.equals("loadMap"))
 		{
-			if (!sT.hasMoreTokens())
+			if (!stringTokenizer.hasMoreTokens())
 			{
-				Add("loadMap not used correctly", LineType.Error);
+				add("loadMap not used correctly", LineType.Error);
 				return false;
 			}
-			if (TiledMapLoader.CurrentMap != null)
+			if (TiledMapLoader.currentMap != null)
 			{
-				Add("A map is already loaded", LineType.Error);
+				add("A map is already loaded", LineType.Error);
 				return false;
 			}
-			
-			nextToken = sT.nextToken();
-			TiledMap Map = AssetManager.Get(nextToken, TiledMap.class);
-			
+
+			nextToken = stringTokenizer.nextToken();
+			TiledMap Map = assetManager.get(nextToken, TiledMap.class);
+
 			if (Map == null)
 			{
-				Add("Failed to load TMX at location '" + nextToken + "'", LineType.Error);
+				add("Failed to load TMX at location '" + nextToken + "'", LineType.Error);
 				return false;
 			}
-			
-			TiledMapLoader.LoadMap(Game, Map);
+
+			TiledMapLoader.loadMap(game, Map);
 			return true;
-			
+
 		}
 
 		// SWITCHING SCREENS
 		if (command.equals("setScreen"))
 		{
-			if (!sT.hasMoreTokens())
+			if (!stringTokenizer.hasMoreTokens())
 			{
-				Add("setScreen not used correctly", LineType.Error);
+				add("setScreen not used correctly", LineType.Error);
 				return false;
 			}
 
 			try
 			{
-				int screen = Integer.parseInt(sT.nextToken());
-				if (!ScreenManager.SetScreen(screen, Game))
+				int screen = Integer.parseInt(stringTokenizer.nextToken());
+				if (!screenManager.setScreen(screen, game))
 				{
-					Add("Screen " + screen + " does not exist", LineType.Error);
+					add("Screen " + screen + " does not exist", LineType.Error);
 					return false;
 				}
 			}
 			catch (NumberFormatException e)
 			{
-				Add("Must pass a screen number to setScreen", LineType.Error);
+				add("Must pass a screen number to setScreen", LineType.Error);
 				return false;
 			}
 			return true;
@@ -352,26 +356,61 @@ public class Console extends Actor
 		// SETTING SPEED
 		if (command.equals("setGameSpeed"))
 		{
-			if (!sT.hasMoreTokens())
+			if (!stringTokenizer.hasMoreTokens())
 			{
-				Add("setGameSpeed not used correctly", LineType.Error);
+				add("setGameSpeed not used correctly", LineType.Error);
 				return false;
 			}
 
 			try
 			{
-				int speed = Integer.parseInt(sT.nextToken());
+				int speed = Integer.parseInt(stringTokenizer.nextToken());
 				PhysicsWorldManager.GAME_SPEED = speed;
 			}
 			catch (NumberFormatException e)
 			{
-				Add("Must pass a speed number to setGameSpeed", LineType.Error);
+				add("Must pass a speed number to setGameSpeed", LineType.Error);
 				return false;
 			}
 			return true;
 		}
 
-		Add("Command not recognized", LineType.Error);
+		if (command.equals("setAmbientLight"))
+		{
+			if (!stringTokenizer.hasMoreTokens())
+			{
+				add("setAmbientLight not used correctly", LineType.Error);
+				return false;
+			}
+
+			String color = stringTokenizer.nextToken();
+			RayHandler LightWorld = game.getLightWorld();
+
+			switch (color)
+			{
+			case "WHITE":
+				LightWorld.setAmbientLight(Color.WHITE);
+				break;
+			case "BLACK":
+				LightWorld.setAmbientLight(Color.BLACK);
+				break;
+			case "RED":
+				LightWorld.setAmbientLight(Color.RED);
+				break;
+			case "BLUE":
+				LightWorld.setAmbientLight(Color.BLUE);
+				break;
+			case "GREEN":
+				LightWorld.setAmbientLight(Color.GREEN);
+				break;
+			default:
+				add("Must pass a valid color to setAmbientLight", LineType.Error);
+				return false;
+			}
+			return true;
+		}
+
+		add("Command not recognized", LineType.Error);
 		return false;
 	}
 }

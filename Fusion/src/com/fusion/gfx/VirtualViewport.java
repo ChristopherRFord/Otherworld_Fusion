@@ -34,10 +34,11 @@ public class VirtualViewport
 	}
 
 	/**
-	 * Returns the view port width to let all the virtual view port to be shown on the screen.
-	 * 
+	 * getWidth
 	 * @param screenWidth - The screen width.
 	 * @param screenHeight - The screen Height.
+	 * 
+	 * Returns the view port width to let all the virtual view port to be shown on the screen.
 	 */
 	public float getWidth(float screenWidth, float screenHeight)
 	{
@@ -51,10 +52,11 @@ public class VirtualViewport
 	}
 
 	/**
-	 * Returns the view port height to let all the virtual view port to be shown on the screen.
-	 * 
+	 * getHeight
 	 * @param screenWidth - The screen width.
 	 * @param screenHeight - The screen Height.
+	 * 
+	 * Returns the view port height to let all the virtual view port to be shown on the screen.
 	 */
 	public float getHeight(float screenWidth, float screenHeight)
 	{

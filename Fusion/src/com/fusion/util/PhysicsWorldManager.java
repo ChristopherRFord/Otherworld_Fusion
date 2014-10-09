@@ -2,9 +2,12 @@ package com.fusion.util;
 
 import java.util.ArrayList;
 
+import box2dLight.RayHandler;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * PhysicsWorldManager
@@ -18,69 +21,84 @@ import com.badlogic.gdx.physics.box2d.World;
  */
 public class PhysicsWorldManager
 {
-	private static PhysicsWorldManager Singleton = null;
 	public static int SCALING_FACTOR = 16;
 	public static int GAME_SPEED = 10;
 	public static float TIME_STEP = 1/45f;
 	
-	private World World;
-	private ArrayList<Body> DeleteQueue;
+	private static PhysicsWorldManager singleton = null;
+	
+	private World world;
+	private RayHandler lightWorld;
+	private ArrayList<Body> deleteQueue;
 	
 	private PhysicsWorldManager()
 	{
-		World = new World(new Vector2(0, 0), true);
+		world = new World(new Vector2(0, 0), true);
+		lightWorld = new RayHandler(world);
 		
-		DeleteQueue = new ArrayList<Body>();
+		deleteQueue = new ArrayList<Body>();
 	}
 	
-	public static PhysicsWorldManager GetPhysicsWorldManager()
+	public static PhysicsWorldManager getPhysicsWorldManager()
 	{
-		if (Singleton == null)
+		if (singleton == null)
 		{
-			Singleton = new PhysicsWorldManager();
+			singleton = new PhysicsWorldManager();
 		}
 		
-		return Singleton;
+		return singleton;
 	}
 	
 	/**
-	 * Step
+	 * step
 	 *
 	 * Does a normal physics world step and checks the delete queue.
 	 */
-	public void Step(float timeStep, int velocityIterations, int positionIterations)
+	public void step(float timeStep, int velocityIterations, int positionIterations)
 	{
-		World.step(timeStep, velocityIterations, positionIterations);
-		DeleteQueue();
+		world.step(timeStep, velocityIterations, positionIterations);
+		deleteQueue();
 	}
 	
 	/**
-	 * DeleteAll
+	 * deleteAll
 	 * 
 	 * Checks if the delete queue is empty. If it's not
 	 * then delete all of the items in queue out of the World
 	 * and clear the queue.
 	 */
-	private void DeleteQueue()
+	private void deleteQueue()
 	{
-		if (DeleteQueue.size() <= 0) return;
+		if (deleteQueue.size() <= 0) return;
 		
-		for (int i = 0; i < DeleteQueue.size(); i++)
-			World.destroyBody(DeleteQueue.get(i));
+		for (int i = 0; i < deleteQueue.size(); i++)
+			world.destroyBody(deleteQueue.get(i));
 
-		DeleteQueue.clear();
+		deleteQueue.clear();
 	}
 	
 	/**
-	 * Delete
+	 * delete
 	 * @param body - Body to be deleted
 	 * 
 	 * Adds a body to the delete queue
 	 */
-	public void Delete(Body body)
+	public void delete(Body body)
 	{
-		DeleteQueue.add(body);
+		deleteQueue.add(body);
 	}
 	
-	public World GetWorld(){	return World;	}
+	public void deleteAll()
+	{
+		Array<Body> bodies = new Array<Body>();
+		world.getBodies(bodies);
+		
+		for (int i = 0; i < bodies.size; i++)
+		{
+			deleteQueue.add(bodies.get(i));
+		}
+	}
+	
+	public World 		getWorld()		{	return world;		}
+	public RayHandler 	getLightWorld()	{	return lightWorld;	}
 }

@@ -23,23 +23,23 @@ public class GameScreenManager
 {
 	private static GameScreenManager singleton = null;
 	
-	private HashMap<Integer, FusionScreen> ScreenMap;
-	private Stack<FusionScreen> CurrentScreen;
+	private HashMap<Integer, FusionScreen> screenMap;
+	private Stack<FusionScreen> currentScreen;
 	
 	private GameScreenManager()
 	{
-		ScreenMap = new HashMap<Integer, FusionScreen>();
-		CurrentScreen = new Stack<FusionScreen>();
+		screenMap = new HashMap<Integer, FusionScreen>();
+		currentScreen = new Stack<FusionScreen>();
 	}
 
 	/**
-	 * GetScreenManager
+	 * getScreenManager
 	 * @return - The singleton GameScreenManager variable
 	 * 
 	 * The first time this function is called the singleton object
 	 * is privately constructed and the returned
 	 */
-	public static GameScreenManager GetScreenManager()
+	public static GameScreenManager getScreenManager()
 	{
 		if (singleton == null)
 		{
@@ -52,103 +52,102 @@ public class GameScreenManager
 	// ------------------------
 	
 	/**
-	 * PutScreen
-	 * @param NewScreen - Screen to be added to the hash map
+	 * putScreen
+	 * @param newScreen - Screen to be added to the hash map
 	 * @return a boolean value, true if the screen is added, false otherwise
 	 * 
 	 * Adds a new screen into the hash map
 	 */
-	public boolean PutScreen(FusionScreen NewScreen)
+	public boolean putScreen(FusionScreen newScreen)
 	{
-		if (ScreenMap.get(NewScreen.getID()) != null) return false;
+		if (screenMap.get(newScreen.getID()) != null) return false;
 		else
 		{
-			ScreenMap.put(NewScreen.getID(), NewScreen);
+			screenMap.put(newScreen.getID(), newScreen);
 			return true;
 		}
 	}
 	
-	public FusionScreen GetScreen(int ID){	return ScreenMap.get(ID);	}
+	public FusionScreen getScreen(int ID){	return screenMap.get(ID);	}
 	// ------------------------
 	
 	/**
-	 * SetScreen
+	 * setScreen
 	 * @param ID - ID of the new current screen
-	 * @param Game - Game that allows us to set the screen
+	 * @param game - Game that allows us to set the screen
 	 * 
 	 * Clears the stack because we only want to use that for menu
 	 * and battle screen switching. Pushes the screen on the stack
 	 * and makes that the current screen
 	 */
-	public boolean SetScreen(int ID, Game Game)
+	public boolean setScreen(int ID, Game game)
 	{	
-		if (ScreenMap.get(ID) == null) return false;
+		if (screenMap.get(ID) == null) return false;
 		
-		while(!CurrentScreen.isEmpty())
+		while(!currentScreen.isEmpty())
 		{
-			Gdx.app.log("-Leaving Screen", CurrentScreen.peek().getID() + "");
-			CurrentScreen.pop().Leave(ScreenSwitchState.SET_SCREEN);
+			Gdx.app.log("-Leaving Screen", currentScreen.peek().getID() + "");
+			currentScreen.pop().Leave(ScreenSwitchState.SET_SCREEN);
 		}
 		
-		CurrentScreen.push(ScreenMap.get(ID));
-		
+		currentScreen.push(screenMap.get(ID));
 		Gdx.app.log("-Entering Screen", ID + "");
-		ScreenMap.get(ID).Enter(ScreenSwitchState.SET_SCREEN);
-		Game.setScreen(CurrentScreen.peek());
+		screenMap.get(ID).Enter(ScreenSwitchState.SET_SCREEN);
+		game.setScreen(currentScreen.peek());
 		
 		return true;
 	}
 
 	/**
-	 * PushSetScreen
+	 * pushSetScreen
 	 * @param ID - ID of the new current screen
-	 * @param Game - Game that allows us to set the screen
+	 * @param game - Game that allows us to set the screen
 	 * 
 	 * Pushes the new current screen to the stack and
 	 * makes that the current screen
 	 */
-	public void PushSetScreen(int ID, Game Game)
+	public void pushSetScreen(int ID, Game game)
 	{
-		if (!CurrentScreen.isEmpty())
+		if (!currentScreen.isEmpty())
 		{
-			int oldID = CurrentScreen.peek().getID();
+			int oldID = currentScreen.peek().getID();
 			Gdx.app.log("-Leaving Screen", oldID + "");
-			ScreenMap.get(oldID).Leave(ScreenSwitchState.PUSH_SCREEN);
+			screenMap.get(oldID).Leave(ScreenSwitchState.PUSH_SCREEN);
 		}
 		
-		CurrentScreen.push(ScreenMap.get(ID));
+		currentScreen.push(screenMap.get(ID));
 		
 		Gdx.app.log("-Entering Screen", ID + "");
-		ScreenMap.get(ID).Enter(ScreenSwitchState.PUSH_SCREEN);
-		Game.setScreen(CurrentScreen.peek());
+		screenMap.get(ID).Enter(ScreenSwitchState.PUSH_SCREEN);
+		game.setScreen(currentScreen.peek());
 	}
 	
 	/**
-	 * PopSetScreen
-	 * @param Game - Game that allows us to set the screen
+	 * popSetScreen
+	 * @param game - Game that allows us to set the screen
 	 * 
 	 * Checks if there is a screen under the current screen on the stack.
 	 * If there isn't then return and do nothing, if there is then pop
 	 * the current screen and make the new peek the current screen
 	 */
-	public void PopSetScreen(Game Game)
+	public void popSetScreen(Game game)
 	{
-		if (CurrentScreen.size() <= 1) return;
+		if (currentScreen.size() <= 1) return;
 		
-		int oldID = CurrentScreen.peek().getID();
+		int oldID = currentScreen.peek().getID();
 		
 		Gdx.app.log("-Leaving Screen", oldID + "");
-		ScreenMap.get(oldID).Leave(ScreenSwitchState.POP_SCREEN);
-		CurrentScreen.pop();
+		screenMap.get(oldID).Leave(ScreenSwitchState.POP_SCREEN);
+		currentScreen.pop();
 		
-		int newID = CurrentScreen.peek().getID();
+		int newID = currentScreen.peek().getID();
 		
 		Gdx.app.log("-Entering Screen", newID  + "");
-		ScreenMap.get(newID).Enter(ScreenSwitchState.POP_SCREEN);
-		Game.setScreen(CurrentScreen.peek());
+		screenMap.get(newID).Enter(ScreenSwitchState.POP_SCREEN);
+		game.setScreen(currentScreen.peek());
 	}
 	
-	public FusionScreen GetCurrentScreen()	{	return CurrentScreen.peek();	}
-	public int GetScreenSize()				{	return CurrentScreen.size();	}
+	public FusionScreen getCurrentScreen()	{	return currentScreen.peek();	}
+	public int getScreenSize()				{	return currentScreen.size();	}
 }
 

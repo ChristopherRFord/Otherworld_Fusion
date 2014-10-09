@@ -1,11 +1,13 @@
 package com.fusion.gfx;
 
-import static com.fusion.util.PhysicsWorldManager.SCALING_FACTOR;
-
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+
 import com.fusion.util.PhysicsWorldManager;
+
+import static com.fusion.util.PhysicsWorldManager.SCALING_FACTOR;
+
 
 /**
  * DebugRenderer
@@ -17,42 +19,42 @@ import com.fusion.util.PhysicsWorldManager;
 public class DebugRenderer
 {
 	// Actual Renderers
-	private Box2DDebugRenderer Box2DDebugRenderer;
-	private	ShapeRenderer ShapeRenderer;
+	private Box2DDebugRenderer box2DDebugRenderer;
+	private	ShapeRenderer shapeRenderer;
 	
 	// Cameras
-	private VirtualViewportCamera GameCamera;
-	private VirtualViewportCamera PhysicsCamera;
+	private VirtualViewportCamera gameCamera;
+	private VirtualViewportCamera physicsCamera;
 	
 	// Physics World
-	private PhysicsWorldManager PhysicsManager;
+	private PhysicsWorldManager physicsManager;
 	
-	public DebugRenderer(VirtualViewportCamera GameCamera, VirtualViewportCamera PhysicsCamera)
+	public DebugRenderer(VirtualViewportCamera gameCamera, VirtualViewportCamera physicsCamera)
 	{
-		this.GameCamera = GameCamera;
-		this.PhysicsCamera = PhysicsCamera;
+		this.gameCamera = gameCamera;
+		this.physicsCamera = physicsCamera;
 		
-		Box2DDebugRenderer = new Box2DDebugRenderer();
-		ShapeRenderer = new ShapeRenderer();
+		box2DDebugRenderer = new Box2DDebugRenderer();
+		shapeRenderer = new ShapeRenderer();
 		
-		PhysicsManager = PhysicsWorldManager.GetPhysicsWorldManager();
+		physicsManager = PhysicsWorldManager.getPhysicsWorldManager();
 	}
 	
-	public void DebugRender(boolean Debug)
+	public void debugRender(boolean debug)
 	{
-		if (!Debug) return;
+		if (!debug) return;
 		
-		PhysicsCamera.position.set(GameCamera.position.x / SCALING_FACTOR, GameCamera.position.y/SCALING_FACTOR, 0);
-		PhysicsCamera.update();
-		Box2DDebugRenderer.render(PhysicsManager.GetWorld(), PhysicsCamera.combined);
+		physicsCamera.position.set(gameCamera.position.x / SCALING_FACTOR, gameCamera.position.y/SCALING_FACTOR, 0);
+		physicsCamera.update();
+		box2DDebugRenderer.render(physicsManager.getWorld(), physicsCamera.combined);
 		
-		ShapeRenderer.setProjectionMatrix(GameCamera.combined);
+		shapeRenderer.setProjectionMatrix(gameCamera.combined);
 		
-		ShapeRenderer.begin(ShapeType.Line);
-		ShapeRenderer.line(GameCamera.blposition.x + 0, GameCamera.GetTopBoundry(), GameCamera.blposition.x + GameCamera.viewportWidth, GameCamera.GetTopBoundry());
-		ShapeRenderer.line(GameCamera.blposition.x + 0, GameCamera.GetBottomBoundry(), GameCamera.blposition.x + GameCamera.viewportWidth, GameCamera.GetBottomBoundry());
-		ShapeRenderer.line(GameCamera.GetRightBoundry(), GameCamera.blposition.y + 0, GameCamera.GetRightBoundry(), GameCamera.blposition.y + GameCamera.viewportHeight);
-		ShapeRenderer.line(GameCamera.GetLeftBoundry(), GameCamera.blposition.y + 0, GameCamera.GetLeftBoundry(), GameCamera.blposition.y + GameCamera.viewportHeight);
-		ShapeRenderer.end();
+		shapeRenderer.begin(ShapeType.Line);
+		shapeRenderer.line(gameCamera.blposition.x + 0, gameCamera.GetTopBoundry(), gameCamera.blposition.x + gameCamera.viewportWidth, gameCamera.GetTopBoundry());
+		shapeRenderer.line(gameCamera.blposition.x + 0, gameCamera.GetBottomBoundry(), gameCamera.blposition.x + gameCamera.viewportWidth, gameCamera.GetBottomBoundry());
+		shapeRenderer.line(gameCamera.GetRightBoundry(), gameCamera.blposition.y + 0, gameCamera.GetRightBoundry(), gameCamera.blposition.y + gameCamera.viewportHeight);
+		shapeRenderer.line(gameCamera.GetLeftBoundry(), gameCamera.blposition.y + 0, gameCamera.GetLeftBoundry(), gameCamera.blposition.y + gameCamera.viewportHeight);
+		shapeRenderer.end();
 	}
 }

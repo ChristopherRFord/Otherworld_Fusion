@@ -13,64 +13,64 @@ import static com.otherworld.OtherworldConstants.*;
 
 public class StartScreen extends FusionScreen
 {
-	private Texture Background;
-	private Music Music;
+	private Texture background;
+	private Music music;
 	
-	private TextButton_Otherworld ExploreButton;
-	private TextButton_Otherworld ExitButton;
+	private TextButton_Otherworld exploreButton;
+	private TextButton_Otherworld exitButton;
 	
-	public StartScreen(int ID, FusionGame Game)
+	public StartScreen(int ID, FusionGame game)
 	{
-		super(ID, Game);
+		super(ID, game);
 	}
 
 	@Override
-	protected void Update(float Delta)
+	protected void Update(float delta)
 	{
 		
 	}
 
 	@Override
-	protected void Render(float Delta)
+	protected void Render(float delta)
 	{
-		GameBatch.begin();
-		GameBatch.draw(Background, 0, 0,  GameCamera.viewportWidth, GameCamera.viewportHeight);
-		GameBatch.end();
+		gameBatch.begin();
+		gameBatch.draw(background, 0, 0,  gameCamera.viewportWidth, gameCamera.viewportHeight);
+		gameBatch.end();
 	}
 
 	@Override
-	public void Enter(ScreenSwitchState State)
+	public void Enter(ScreenSwitchState state)
 	{
-		AssetManager.LoadAssetGroup(ASSET_XML_PATH + "StartMenu.xml");
+		assetManager.loadAssetGroup(ASSET_XML_PATH + "StartMenu.xml");
 		
-		Background = AssetManager.Get(IMAGE_PATH + "Background.png", Texture.class);
-		Music = AssetManager.Get(MUSIC_PATH + "MenuTheme.mp3", Music.class);
+		background = assetManager.get(IMAGE_PATH + "Background.png", Texture.class);
+		music = assetManager.get(MUSIC_PATH + "MenuTheme.mp3", Music.class);
 		
-		Music.setLooping(true);
-		Music.play();
+		music.setLooping(true);
+		//Music.play();
 	}
 
 	@Override
-	public void Leave(ScreenSwitchState State)
+	public void Leave(ScreenSwitchState state)
 	{
-		Music.stop();
+		//Music.stop();
 		
-		ExploreButton.remove();
-		ExitButton.remove();
+		exploreButton.remove();
+		exitButton.remove();
 		
-		AssetManager.UnloadAssetGroup(ASSET_XML_PATH + "StartMenu.xml");
+		assetManager.unloadAssetGroup(ASSET_XML_PATH + "StartMenu.xml");
 	}
 
 	@Override
-	protected void InitGUI(int Width, int Height)
+	protected void InitGUI(int width, int height)
 	{
-		Vector2 ButtonBounds = new Vector2(120, 60);
+		Vector2 buttonBounds = new Vector2(gameCamera.viewportWidth * .15f, gameCamera.viewportHeight * .1f);
 		
-		Vector2 ExploreLocation = new Vector2(100, 100);
-		Vector2 ExitLocation = new Vector2(ExploreLocation.x + ButtonBounds.x, ExploreLocation.y);
+		Vector2 exploreLocation = new Vector2(gameCamera.viewportWidth * .125f, gameCamera.viewportHeight * .165f);
+		Vector2 exitLocation = new Vector2(exploreLocation.x + buttonBounds.x, exploreLocation.y);
 		
-		ExploreButton = new TextButton_Otherworld("Explore", AssetManager.Get(IMAGE_PATH + "Menu.png", Texture.class), ExploreLocation, ButtonBounds);
-		ExploreButton.addListener(new InputListener(){
+		exploreButton = new TextButton_Otherworld("Explore", assetManager.get(IMAGE_PATH + "Menu.png", Texture.class), exploreLocation, buttonBounds);
+		exploreButton.addListener(new InputListener(){
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button)
 			{
 				return true;
@@ -78,13 +78,12 @@ public class StartScreen extends FusionScreen
 			
 			public void touchUp(InputEvent event, float x, float y, int pointer, int button)
 			{
-				
-				ScreenManager.SetScreen(2, Game);
+				screenManager.setScreen(2, game);
 			}
 		});
-		Stage.addActor(ExploreButton);
+		stage.addActor(exploreButton);
 		
-		ExitButton = new TextButton_Otherworld("Exit", AssetManager.Get(IMAGE_PATH + "Menu.png", Texture.class), ExitLocation, ButtonBounds);
-		Stage.addActor(ExitButton);
+		exitButton = new TextButton_Otherworld("Exit", assetManager.get(IMAGE_PATH + "Menu.png", Texture.class), exitLocation, buttonBounds);
+		stage.addActor(exitButton);
 	}
 }

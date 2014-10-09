@@ -2,8 +2,8 @@ package com.fusion.err;
 
 public class EntityLoadingException extends Exception
 {
-	public EntityLoadingException(String EntityLocation, String Type)
+	public EntityLoadingException(String entityLocation, String type)
 	{
-		super("ERROR LOADING COMPONENT " + Type + " AT " + EntityLocation);
+		super("ERROR LOADING COMPONENT " + type + " AT " + entityLocation);
 	}
 }

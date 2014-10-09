@@ -9,13 +9,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 
 public class TextFieldStyle_Otherworld extends TextFieldStyle
 {
-	public TextFieldStyle_Otherworld(Texture Texture, BitmapFont Font, Color Color)
+	public TextFieldStyle_Otherworld(Texture texture, BitmapFont font, Color fontColor)
 	{
 		super();
 		
 
-		background = new NinePatchDrawable(new NinePatch(Texture, 8, 8, 8, 8));
-		font = Font;
-		fontColor = Color;
+		background = new NinePatchDrawable(new NinePatch(texture, 8, 8, 8, 8));
+		this.font = font;
+		this.fontColor = fontColor;
 	}
 }

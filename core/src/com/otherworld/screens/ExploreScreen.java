@@ -24,7 +24,7 @@ public class ExploreScreen extends FusionScreen
 	@Override
 	protected void Render(float Delta)
 	{
-		RenderMap();
+		renderMap();
 	}
 
 	@Override
@@ -33,9 +33,9 @@ public class ExploreScreen extends FusionScreen
 		switch (State)
 		{
 		case SET_SCREEN:
-			AssetManager.LoadAssetGroup(ASSET_XML_PATH + "Explore.xml");
-			TiledMapLoader.LoadMap(Game, AssetManager.Get(TMX_PATH + "Explore.tmx", TiledMap.class));
-			EntityManager.LoadEntity("entity_xmls/Player.xml");
+			assetManager.loadAssetGroup(ASSET_XML_PATH + "Explore.xml");
+			TiledMapLoader.loadMap(game, assetManager.get(TMX_PATH + "Explore.tmx", TiledMap.class));
+			entityManager.loadEntity("entity_xmls/Player.xml");
 			break;
 		case PUSH_SCREEN:
 			break;
@@ -52,7 +52,9 @@ public class ExploreScreen extends FusionScreen
 		switch(State)
 		{
 		case SET_SCREEN:
-			AssetManager.UnloadAssetGroup(ASSET_XML_PATH + "Explore.xml");
+			entityManager.deleteAllEntities();
+			TiledMapLoader.unloadMap(game);
+			assetManager.unloadAssetGroup(ASSET_XML_PATH + "Explore.xml");
 			break;
 		case PUSH_SCREEN:
 			break;

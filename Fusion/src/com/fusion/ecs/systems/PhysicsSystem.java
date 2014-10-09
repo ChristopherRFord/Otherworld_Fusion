@@ -9,12 +9,17 @@ import com.badlogic.ashley.utils.ImmutableArray;
 
 import com.fusion.ecs.components.PhysicsComponent;
 
+/**
+ * PhysicsSystem
+ * @author ChristopherFord
+ *
+ * System for updating entities with a physics body
+ */
 public class PhysicsSystem extends EntitySystem
 {
-	private ImmutableArray<Entity> Entities;
+	private ImmutableArray<Entity> entities;
 	
 	private ComponentMapper<PhysicsComponent> PM = ComponentMapper.getFor(PhysicsComponent.class);
-	
 	 
 	public PhysicsSystem()
 	{
@@ -24,19 +29,18 @@ public class PhysicsSystem extends EntitySystem
 	@Override
 	public void addedToEngine(Engine engine)
 	{
-		Entities = engine.getEntitiesFor(Family.getFor(PhysicsComponent.class));
+		entities = engine.getEntitiesFor(Family.getFor(PhysicsComponent.class));
 	}
 	
 	@Override
 	public void update(float delta)
 	{
-		for (int i = 0; i < Entities.size(); i++)
+		for (int i = 0; i < entities.size(); i++)
 		{
-			Entity Entity = Entities.get(i);
-			PhysicsComponent PC = PM.get(Entity);
+			Entity entity = entities.get(i);
+			PhysicsComponent PC = PM.get(entity);
 			
-			
-			PC.Move();
+			PC.move();
 		}
 	}
 }

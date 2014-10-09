@@ -1,13 +1,11 @@
 package com.fusion.gfx;
 
-import java.util.ArrayList;
-
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.physics.box2d.Body;
 
 /**
  * TiledMap_Fusion
- * @author Christopher
+ * @author Christopher Ford
  * 
  * Based on LIBGDX's TiledMap. Has an array which stores
  * the physic bodies for collision tiles for quick loading
@@ -15,15 +13,15 @@ import com.badlogic.gdx.physics.box2d.Body;
  */
 public class TiledMap_Fusion
 {
-	private TiledMap Map;
-	private ArrayList<Body> BodyList;
+	private TiledMap map;
+	private Body mapBody;
 	
-	public TiledMap_Fusion(TiledMap Map)
+	public TiledMap_Fusion(TiledMap map)
 	{
-		this.Map = Map;
-		BodyList = new ArrayList<Body>();
+		this.map = map;
 	}
 	
-	public TiledMap			GetTiledMap(){	return Map;			}
-	public ArrayList<Body> 	GetBodyList(){	return BodyList;	}
+	public TiledMap			getTiledMap()				{	return map;					}
+	public Body			 	getMapBody()				{	return mapBody;				}
+	public void				SetMapBody(Body mapBody)	{	this.mapBody = mapBody;		}
 }

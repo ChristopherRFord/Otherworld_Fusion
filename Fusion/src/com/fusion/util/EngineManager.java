@@ -14,7 +14,9 @@ import com.badlogic.gdx.utils.XmlReader;
 import com.badlogic.gdx.utils.XmlReader.Element;
 
 import com.fusion.ecs.Component_Fusion;
+import com.fusion.ecs.components.AnimationComponent;
 import com.fusion.ecs.components.InputComponent;
+import com.fusion.ecs.components.LightComponent;
 import com.fusion.ecs.components.PhysicsComponent;
 import com.fusion.ecs.components.TextureComponent;
 import com.fusion.err.EntityLoadingException;
@@ -23,7 +25,9 @@ enum EntityType
 {
 	TextureComponent,
 	InputComponent,
-	PhysicsComponent
+	PhysicsComponent,
+	AnimationComponent,
+	LightComponent
 }
 
 /**
@@ -39,122 +43,124 @@ enum EntityType
  */
 public class EngineManager
 {
-	private static EngineManager Singleton = null;
-	
-	private Engine Engine;
-	private ComponentFactory ComponentFactory;
-	private ArrayList<Entity> Entities;
-	
-	private XmlReader XmlReader;
-	
-	
+	private static EngineManager singleton = null;
+
+	private Engine engine;
+	private ComponentFactory componentFactory;
+	private ArrayList<Entity> entities;
+
+	private XmlReader xmlReader;
+
 	// Private constructor
 	private EngineManager()
 	{
-		Engine = new Engine();
-		ComponentFactory = new ComponentFactory();
-		Entities = new ArrayList<Entity>();
+		engine = new Engine();
+		componentFactory = new ComponentFactory();
+		entities = new ArrayList<Entity>();
 
-		XmlReader = new XmlReader();
+		xmlReader = new XmlReader();
 	}
-	
+
 	// Static singleton retrieve message
-	public static EngineManager GetEngineManager()
+	public static EngineManager getEngineManager()
 	{
-		if (Singleton == null)
-			Singleton = new EngineManager();
+		if (singleton == null)
+			singleton = new EngineManager();
 
-		return Singleton;
+		return singleton;
 	}
-	
+
 	/**
-	 * LoadEntity
-	 * @param Location - Location in project directory of XML file
+	 * loadEntity
+	 * @param location - Location in project directory of XML file
 	 * 
 	 * Parses a XML file in the project directory. Loads every individual
 	 * component into an Entity.
 	 */
-	public boolean LoadEntity(String Location)
+	public boolean loadEntity(String location)
 	{
 		Entity Entity = new Entity();
-		
+
 		try
 		{
-			Gdx.app.log("-Loading XML", Location);
-			
+			Gdx.app.log("-Loading XML", location);
+
 			// Loading in the XML file
-			XmlReader.Element xml = XmlReader.parse(Gdx.files.classpath(Location));
-			
+			XmlReader.Element xml = xmlReader.parse(Gdx.files.classpath(location));
+
 			//Getting the components and storing them in an array
 			Array<XmlReader.Element> components = xml.getChildrenByName("component");
-			
-			//Initializing the components
-			for (XmlReader.Element element : components)
+
+			if (components.size != 0)
 			{
-				String type = element.getChildByName("type").getText();
-				Component_Fusion component = ComponentFactory.CreateComponent(type, element, Entity);
-				
-				if (component == null) throw new EntityLoadingException(Location, type);
-				Entity.add(component);
+				//Initializing the components
+				for (XmlReader.Element element : components)
+				{
+					String type = element.getChildByName("type").getText();
+					Component_Fusion component = componentFactory.createComponent(type, element, Entity);
+
+					if (component == null) throw new EntityLoadingException(location, type);
+					Entity.add(component);
+				}
+
+				addEntity(Entity);
 			}
-			
-			addEntity(Entity);
 		}
 		catch (IOException | EntityLoadingException | SerializationException e)
 		{
 			Gdx.app.log(e.getClass() + "", e.getMessage());
 			return false;
 		}
-		
+
 		return true;
 	}
-	
-	public void addEntity(Entity Entity)
+
+	public void addEntity(Entity entity)
 	{
-		Engine.addEntity(Entity);
-		Entities.add(Entity);
+		engine.addEntity(entity);
+		entities.add(entity);
 	}
-	
-	public void removeEnitty(Entity Entity)
+
+	public void deleteEnitty(Entity entity)
 	{
-		if (Entities.isEmpty()) return;
-		
-		ImmutableArray<Component> Components = Entity.getComponents();
-		
-		for (int i = 0; i < Components.size(); i++)
+		if (entities.isEmpty()) return;
+
+		ImmutableArray<Component> components = entity.getComponents();
+
+		for (int i = 0; i < components.size(); i++)
 		{
-			Component_Fusion C = (Component_Fusion) Components.get(i);
-			C.DestroyComponent();
+			Component_Fusion component = (Component_Fusion) components.get(i);
+			component.destroyComponent();
 		}
-		
-		Engine.removeEntity(Entity);
-		Entities.remove(Entity);
+
+		engine.removeEntity(entity);
+		entities.remove(entity);
 	}
-	
-	public void removeAllEntities()
+
+	public void deleteAllEntities()
 	{
-		if (Entities.isEmpty()) return;
-		
-		for (int i = 0; i < Entities.size(); i++)
+		if (entities.isEmpty()) return;
+
+		for (int i = 0; i < entities.size(); i++)
 		{
-			Entity E = Entities.get(i);
-			
-			ImmutableArray<Component> Components = E.getComponents();
-			
-			for (int j = 0; j < Components.size(); j++)
+			Entity entity = entities.get(i);
+
+			ImmutableArray<Component> components = entity.getComponents();
+
+			for (int j = 0; j < components.size(); j++)
 			{
-				Component_Fusion C = (Component_Fusion) Components.get(j);
-				C.DestroyComponent();
+				Component_Fusion component = (Component_Fusion) components.get(j);
+				component.destroyComponent();
 			}
 		}
-		
-		Engine.removeAllEntities();
-		Entities.clear();
+
+		engine.removeAllEntities();
+		entities.clear();
 	}
-	
-	public ArrayList<Entity>	GetEntitiy()	{	return Entities;		}
-	public int 					GetNumEntities(){	return Entities.size();	}
-	public Engine 				GetEngine()		{	return Engine;			}
+
+	public ArrayList<Entity>	getEntitiy()	{	return entities;		}
+	public int 					getNumEntities(){	return entities.size();	}
+	public Engine 				getEngine()		{	return engine;			}
 }
 
 /**
@@ -167,31 +173,44 @@ public class EngineManager
 class ComponentFactory
 {
 	protected ComponentFactory(){}
-	
-	protected Component_Fusion CreateComponent(String Type, Element Element, Entity Parent)
+
+	protected Component_Fusion createComponent(String type, Element element, Entity parent)
 	{
-		if (Type.equals(EntityType.TextureComponent.toString()))
+		if (type.equals(EntityType.TextureComponent.toString()))
 		{
-			TextureComponent T = new TextureComponent();
-			if (!T.Init(Element)) return null;
-			T.SetParent(Parent);
-			return T;
+			TextureComponent texutreComponent = new TextureComponent();
+			texutreComponent.setParent(parent);
+			if (!texutreComponent.init(element)) return null;
+			return texutreComponent;
 		}
-		else if (Type.equals(EntityType.InputComponent.toString()))
+		else if (type.equals(EntityType.InputComponent.toString()))
 		{
-			InputComponent I = new InputComponent();
-			if (!I.Init(Element)) return null;
-			I.SetParent(Parent);
-			return I;
+			InputComponent inputComponent = new InputComponent();
+			inputComponent.setParent(parent);
+			if (!inputComponent.init(element)) return null;
+			return inputComponent;
 		}
-		else if (Type.equals(EntityType.PhysicsComponent.toString()))
+		else if (type.equals(EntityType.PhysicsComponent.toString()))
 		{
-			PhysicsComponent Py = new PhysicsComponent();
-			if (!Py.Init(Element)) return null;
-			Py.SetParent(Parent);
-			return Py;
+			PhysicsComponent physicsComponent = new PhysicsComponent();
+			physicsComponent.setParent(parent);
+			if (!physicsComponent.init(element)) return null;
+			return physicsComponent;
 		}
-		
+		else if (type.equals(EntityType.AnimationComponent.toString()))
+		{
+			AnimationComponent animationComponent = new AnimationComponent();
+			animationComponent.setParent(parent);
+			if (!animationComponent.init(element)) return null;
+			return animationComponent;
+		}
+		else if (type.equals(EntityType.LightComponent.toString()))
+		{
+			LightComponent lightComponent = new LightComponent();
+			lightComponent.setParent(parent);
+			if (!lightComponent.init(element)) return null;
+			return lightComponent;
+		}
 		return null;
 	}
 }

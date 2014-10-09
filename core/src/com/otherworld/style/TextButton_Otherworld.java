@@ -11,35 +11,35 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 
 public class TextButton_Otherworld extends TextButton
 {
-	public TextButton_Otherworld(String Text, Texture Texture, Vector2 Pos, Vector2 Bounds)
+	public TextButton_Otherworld(String text, Texture texture, Vector2 pos, Vector2 bounds)
 	{
-		super(Text, new TextButtonStyle_Otherworld(Texture));
-		setBounds(Pos.x, Pos.y, Bounds.x, Bounds.y);
+		super(text, new TextButtonStyle_Otherworld(texture));
+		setBounds(pos.x, pos.y, bounds.x, bounds.y);
 	}
 }
 
 class TextButtonStyle_Otherworld extends TextButtonStyle
 {
-	protected TextButtonStyle_Otherworld(Texture Texture)
+	protected TextButtonStyle_Otherworld(Texture texture)
 	{
 		super();
 		
-		Skin Skin = new Skin();
+		Skin skin = new Skin();
 		
-		NinePatch UP 	= new NinePatch(Texture, 8, 8, 8, 8);
-		NinePatch OVER	= new NinePatch(Texture, 8, 8, 8, 8);
-		NinePatch DOWN 	= new NinePatch(Texture, 8, 8, 8, 8);
+		NinePatch UP 	= new NinePatch(texture, 8, 8, 8, 8);
+		NinePatch OVER	= new NinePatch(texture, 8, 8, 8, 8);
+		NinePatch DOWN 	= new NinePatch(texture, 8, 8, 8, 8);
 		
 		OVER.setColor(Color.CYAN);
 		DOWN.setColor(Color.BLUE);
 		
-		Skin.add("UP", UP);
-		Skin.add("OVER", OVER);
-		Skin.add("DOWN", DOWN);
+		skin.add("UP", UP);
+		skin.add("OVER", OVER);
+		skin.add("DOWN", DOWN);
 		
-		up 		= Skin.getDrawable("UP");
-		over 	= Skin.getDrawable("OVER");
-		down 	= Skin.getDrawable("DOWN");
+		up 		= skin.getDrawable("UP");
+		over 	= skin.getDrawable("OVER");
+		down 	= skin.getDrawable("DOWN");
 		
 		font = new BitmapFont();
 		fontColor = Color.WHITE;

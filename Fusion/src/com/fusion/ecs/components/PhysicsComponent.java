@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 import com.fusion.ecs.Component_Fusion;
+import com.fusion.phx.CollisionData;
 import com.fusion.util.PhysicsWorldManager;
 
 import static com.fusion.util.PhysicsWorldManager.*;
@@ -17,91 +18,101 @@ public class PhysicsComponent extends Component_Fusion
 {	
 	private PhysicsWorldManager PhysicsManager;
 	
-	public Body Body;
+	public Body body;
 	
-	private int Width, Height;
-	private float ScaledW, ScaledH;
+	private int width, height;
+	private float scaledW, scaledH;
 	
-	public float ActualX, ActualY;
-	public float OriginX, OriginY;
-	public float ScaledX, ScaledY;
+	public float actualX, actualY;
+	public float originX, originY;
+	public float scaledX, scaledY;
+	
+	public String tag;
+	
+	public boolean isColliding;
+	public Vector2 normals;
 
 	@Override
-	public boolean Init(Element Element)
+	public boolean init(Element element)
 	{
-		PhysicsManager = PhysicsWorldManager.GetPhysicsWorldManager();
+		PhysicsManager = PhysicsWorldManager.getPhysicsWorldManager();
 		
-		Element Data = Element.getChildByName("data");
+		Element data = element.getChildByName("data");
 		
-		float x = Data.getFloat("X");
-		float y = Data.getFloat("Y");
-		float r = Data.getFloat("R");
-		Width = Data.getInt("W");
-		Height = Data.getInt("H");
-		String Type = Data.get("Body");
+		float x = data.getFloat("X");
+		float y = data.getFloat("Y");
+		float r = data.getFloat("R");
+		width = data.getInt("W");
+		height = data.getInt("H");
+		String type = data.get("Body");
+		tag = data.get("Tag");
 		
-		ScaledW = Width/SCALING_FACTOR;
-		ScaledH = Height/SCALING_FACTOR;
+		scaledW = width/SCALING_FACTOR;
+		scaledH = height/SCALING_FACTOR;
 		
-		ActualX = x + (Width/2);
-		ActualY = y + (Height/2);
+		actualX = x + (width/2);
+		actualY = y + (height/2);
 		
-		OriginX = ActualX + (Width/2);
-		OriginY = ActualY + (Height/2);
+		originX = actualX + (width/2);
+		originY = actualY + (height/2);
 		
-		ScaledX = (x/SCALING_FACTOR) + ScaledW;
-		ScaledY = (y/SCALING_FACTOR) + ScaledH;
+		scaledX = (x/SCALING_FACTOR) + scaledW;
+		scaledY = (y/SCALING_FACTOR) + scaledH;
 		
-		BodyDef BodyDef = new BodyDef();
+		BodyDef bodyDef = new BodyDef();
 		
-		switch (Type)
+		switch (type)
 		{
 		case "Dynamic":
-			BodyDef.type = BodyType.DynamicBody;
+			bodyDef.type = BodyType.DynamicBody;
 			break;
 		case "Static":
-			BodyDef.type = BodyType.StaticBody;
+			bodyDef.type = BodyType.StaticBody;
 			break;
 		case "Kinematic":
-			BodyDef.type = BodyType.KinematicBody;
+			bodyDef.type = BodyType.KinematicBody;
 			break;
 		}
 		
-		BodyDef.position.set(ScaledX + (ScaledW/2), ScaledY + (ScaledH/2));
-		Body = PhysicsManager.GetWorld().createBody(BodyDef);
+		bodyDef.position.set(scaledX + (scaledW/2), scaledY + (scaledH/2));
+		body = PhysicsManager.getWorld().createBody(bodyDef);
+		body.setFixedRotation(false);
+		body.setUserData(new CollisionData(parent, tag));
 		
 		CircleShape circle = new CircleShape();
 		circle.setRadius(r/(SCALING_FACTOR * 2));
 
-		FixtureDef FixtureDef = new FixtureDef();
-		FixtureDef.shape = circle;
-		FixtureDef.friction = 0;
-		FixtureDef.density = 100;
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = circle;
+		fixtureDef.friction = 0;
+		fixtureDef.density = 0;
 
-		Body.createFixture(FixtureDef);
+		body.createFixture(fixtureDef);
 
 		circle.dispose();
+		
+		normals = new Vector2();
 		
 		return true;
 	}
 	
 	@Override
-	public void DestroyComponent()
+	public void destroyComponent()
 	{
-		PhysicsManager.Delete(Body);
+		PhysicsManager.delete(body);
 	}
 	
-	public void Move()
+	public void move()
 	{
-		Vector2 ScaledPosition = Body.getPosition();
+		Vector2 scaledPosition = body.getPosition();
 		
-		ScaledX = ScaledPosition.x;
-		ScaledY = ScaledPosition.y;
+		scaledX = scaledPosition.x;
+		scaledY = scaledPosition.y;
 		
-		ActualX = (ScaledPosition.x * SCALING_FACTOR) - (Width/2);
-		ActualY = (ScaledPosition.y * SCALING_FACTOR) - (Height/2);
+		actualX = (scaledPosition.x * SCALING_FACTOR) - (width/2);
+		actualY = (scaledPosition.y * SCALING_FACTOR) - (height/2);
 		
-		OriginX = ScaledPosition.x * SCALING_FACTOR;
-		OriginY = ScaledPosition.y * SCALING_FACTOR;
+		originX = scaledPosition.x * SCALING_FACTOR;
+		originY = scaledPosition.y * SCALING_FACTOR;
 	}
 }

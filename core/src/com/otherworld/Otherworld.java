@@ -16,18 +16,18 @@ public class Otherworld extends FusionGame
 {
 	
 	@Override
-	public void Init()
+	public void init()
 	{
-		AssetManager.LoadAssetGroup(ASSET_XML_PATH + "CommonAssets.xml");
+		assetManager.loadAssetGroup(ASSET_XML_PATH + "CommonAssets.xml");
 
-		ScreenManager.PutScreen(new StartScreen(1, this));
-		ScreenManager.PutScreen(new ExploreScreen(2, this));
+		screenManager.putScreen(new StartScreen(1, this));
+		screenManager.putScreen(new ExploreScreen(2, this));
 	}
 
 	@Override
-	public void Start()
+	public void start()
 	{
-		ScreenManager.SetScreen(1, this);
+		screenManager.setScreen(1, this);
 	}
 	
 	@Override
@@ -35,13 +35,13 @@ public class Otherworld extends FusionGame
 	{
 		super.resize(width, height);
 		
-		Console = new Console(this, new TextFieldStyle_Otherworld(AssetManager.Get("images/Menu.png", Texture.class), new BitmapFont(), Color.WHITE),
-				200, Stage.getHeight());
-		Stage.addActor(Console);
+		console = new Console(this, new TextFieldStyle_Otherworld(assetManager.get("images/Menu.png", Texture.class), new BitmapFont(), Color.WHITE),
+				200, stage.getHeight());
+		stage.addActor(console);
 	}
 	
 	@Override
-	public void Close()
+	public void close()
 	{
 	}	
 }

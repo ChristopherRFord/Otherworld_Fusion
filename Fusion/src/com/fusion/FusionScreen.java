@@ -1,9 +1,12 @@
 package com.fusion;
 
+import box2dLight.RayHandler;
+
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+
 import com.fusion.gfx.DebugRenderer;
 import com.fusion.gfx.VirtualViewportCamera;
 import com.fusion.util.*;
@@ -19,25 +22,26 @@ import com.fusion.util.*;
 public abstract class FusionScreen implements Screen
 {
 	// Managers
-	protected AssetGroupManager AssetManager;
-	protected EngineManager EntityManager;
-	protected GameScreenManager ScreenManager;
-	protected PhysicsWorldManager PhysicsManager;
+	protected AssetGroupManager 	assetManager;
+	protected EngineManager 		entityManager;
+	protected GameScreenManager 	screenManager;
+	protected PhysicsWorldManager 	physicsManager;
 	
 	// Viewport & rendering
-	protected VirtualViewportCamera GameCamera;
-	protected VirtualViewportCamera PhysicsCamera;
-	protected Batch GameBatch;
-	protected OrthogonalTiledMapRenderer TiledMapRenderer;
+	protected VirtualViewportCamera 		gameCamera;
+	protected VirtualViewportCamera 		physicsCamera;
+	protected Batch 						gameBatch;
+	protected OrthogonalTiledMapRenderer 	tiledMapRenderer;
+	protected RayHandler 					lightWorld;
 	
 	// User interface
-	protected Stage Stage;
+	protected Stage stage;
 	
 	// Debugging
-	protected DebugRenderer DebugRenderer;
+	protected DebugRenderer debugRenderer;
 	
 	// Reference to the game
-	protected final FusionGame Game;
+	protected final FusionGame game;
 	
 	// ID of the screen
 	protected final int ID;
@@ -51,86 +55,88 @@ public abstract class FusionScreen implements Screen
 		POP_SCREEN;
 	}
 	
-	
-	public FusionScreen(int ID, FusionGame Game)
+	public FusionScreen(int ID, FusionGame game)
 	{
 		this.ID = ID;
-		this.Game = Game;
+		this.game = game;
 		
-		AssetManager = Game.AssetManager;
-		EntityManager = Game.EntityManager;
-		ScreenManager = Game.ScreenManager;
-		PhysicsManager = Game.PhysicsManager;
+		assetManager = game.assetManager;
+		entityManager = game.entityManager;
+		screenManager = game.screenManager;
+		physicsManager = game.physicsManager;
 		
-		GameCamera = Game.GameCamera;
-		PhysicsCamera = Game.PhysicsCamera;
-		GameBatch = Game.GameBatch;
+		gameCamera = game.gameCamera;
+		physicsCamera = game.physicsCamera;
+		gameBatch = game.gameBatch;
 		
-		Stage = Game.Stage;
+		stage = game.stage;
 		
-		DebugRenderer = Game.DebugRenderer;
+		tiledMapRenderer = game.tiledMapRenderer;
+		lightWorld = game.lightWorld;
 		
-		TiledMapRenderer = Game.TiledMapRenderer;
+		debugRenderer = game.debugRenderer;
 	}
 	
 	public int getID(){	return ID;	}
 
-	protected 	abstract void Update(float Delta);
-	protected 	abstract void Render(float Delta);
-	public 		abstract void Enter(ScreenSwitchState State);
-	public 		abstract void Leave(ScreenSwitchState State);
-	protected 	abstract void InitGUI(int Width, int Height);
+	protected 	abstract void Update(float delta);
+	protected 	abstract void Render(float delta);
+	public 		abstract void Enter(ScreenSwitchState state);
+	public 		abstract void Leave(ScreenSwitchState state);
+	protected 	abstract void InitGUI(int width, int height);
 	
 	@Override
-	public void render(float Delta)
+	public void render(float delta)
 	{
 		// Screen's update method
-		Update(Delta);
+		Update(delta);
 		
 		// UI's update method
-		Stage.act();
+		stage.act();
 		
 		// Physic's update method
-		PhysicsManager.Step(1/45f, 6, 2);
+		physicsManager.step(1/45f, 6, 2);
 		
 		// Screen's rendering method
-		Render(Delta);
+		Render(delta);
 		
 		// Engine's update & rendering method
-		EntityManager.GetEngine().update(Delta);
-		DebugRenderer.DebugRender(Game.GetDebug());
+		entityManager.getEngine().update(delta);
+		
+		lightWorld.setCombinedMatrix(gameCamera.combined);
+		lightWorld.updateAndRender();
+		debugRenderer.debugRender(game.getDebug());
 		
 		// UI's render method
-		Stage.draw();
+		stage.draw();
 	}
 
 	@Override
-	public void resize(int Width, int Height)
+	public void resize(int width, int height)
 	{
-		InitGUI(Width, Height);
+		InitGUI(width, height);
 	}
 	
 	@Override
-	public void hide()
-	{
-	}
+	public void hide(){}
 	
-	protected void RenderMap()
+	protected void renderMap()
 	{
-		TiledMapRenderer.setView(GameCamera);
+		tiledMapRenderer.setView(gameCamera);
 		
-		if (TiledMapRenderer.getMap() != null)
-			TiledMapRenderer.render();
+		if (tiledMapRenderer.getMap() != null)
+			tiledMapRenderer.render();
 	}
 
 	@Override
-	public void show(){}
+	public void show()
+	{
+		gameCamera.position.set(gameCamera.viewportWidth/2, gameCamera.viewportHeight/2, 0);
+	}
 	@Override
 	public void pause(){}
 	@Override
 	public void resume(){}
 	@Override
 	public void dispose(){}
-	
-	
 }
